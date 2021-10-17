@@ -60,10 +60,10 @@ type TxBuilder struct {
 
 type Option = func(b *TxBuilder)
 
-func New(opts ...Option) *TxBuilder {
-	b := &TxBuilder{}
+func New(opts ...Option) TxBuilder {
+	b := TxBuilder{}
 	for _, opt := range opts {
-		opt(b)
+		opt(&b)
 	}
 	return b
 }
