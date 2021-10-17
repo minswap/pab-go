@@ -1,4 +1,15 @@
-package ledger
+package cli
+
+type cborFile struct {
+	Type        string `json:"type"`
+	Description string `json:"description"`
+	CBORHex     string `json:"cborHex"`
+}
+
+type Tx struct {
+	TxHash string `json:"txHash"`
+	TxBody string `json:"txBody"`
+}
 
 type Tip struct {
 	Epoch        int    `json:"epoch"`

@@ -15,12 +15,6 @@ import (
 	"github.com/minswap/pab-go/txbuilder"
 )
 
-type cborFile struct {
-	Type        string `json:"type"`
-	Description string `json:"description"`
-	CBORHex     string `json:"cborHex"`
-}
-
 type Options struct {
 	CLIPath            string
 	NetworkID          NetworkID
@@ -90,12 +84,12 @@ func (c *CardanoCLI) initProtocolParamsFile() error {
 	return nil
 }
 
-func (c *CardanoCLI) GetTip() (*ledger.Tip, error) {
+func (c *CardanoCLI) GetTip() (*Tip, error) {
 	out, err := c.runWithNetwork("query", "tip")
 	if err != nil {
 		return nil, fmt.Errorf("fail to query tip: %w", err)
 	}
-	var tip *ledger.Tip
+	var tip *Tip
 	if err := json.Unmarshal(out, &tip); err != nil {
 		return nil, fmt.Errorf("fail to decode json: %w", err)
 	}
