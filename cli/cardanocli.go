@@ -121,7 +121,7 @@ func (c *CardanoCLI) GetUtxosByAddress(addr string) ([]ledger.Utxo, error) {
 }
 
 func (c *CardanoCLI) BuildTx(txb txbuilder.TxBuilder) (tx *Tx, err error) {
-	tempManager, err := newTempManager()
+	tempManager, err := NewTempManager()
 	if err != nil {
 		return nil, fmt.Errorf("fail to create TempManager: %w", err)
 	}
@@ -167,7 +167,7 @@ func (c *CardanoCLI) BuildTx(txb txbuilder.TxBuilder) (tx *Tx, err error) {
 
 func (c *CardanoCLI) SubmitTxWithSkey(tx *Tx, skeyFilePath string) error {
 	// Create temp file for raw tx and signed tx
-	tempManager, err := newTempManager()
+	tempManager, err := NewTempManager()
 	if err != nil {
 		return fmt.Errorf("fail to create TempManager: %w", err)
 	}
@@ -224,7 +224,7 @@ func (c *CardanoCLI) GetScriptAddress(scriptPath string) (string, error) {
 }
 
 func (c *CardanoCLI) GetDatumHash(datum string) (string, error) {
-	tempManager, err := newTempManager()
+	tempManager, err := NewTempManager()
 	if err != nil {
 		return "", fmt.Errorf("fail to create TempManager: %w", err)
 	}
@@ -248,7 +248,7 @@ func (c *CardanoCLI) SubmitTx(tx *Tx, witnesses string) error {
 		return errors.New("error when submit tx: empty witness")
 	}
 
-	tempManager, err := newTempManager()
+	tempManager, err := NewTempManager()
 	if err != nil {
 		return fmt.Errorf("fail to create TempManager: %w", err)
 	}
