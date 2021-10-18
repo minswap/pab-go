@@ -39,7 +39,7 @@ func buildOutput(o txbuilder.TxOutput) string {
 	return fmt.Sprintf("%s + %s", o.Address, buildValue(o.Value))
 }
 
-func (cli *CardanoCLI) buildTempFile(suffix string, content string, temp *tempManager) string {
+func (cli *CardanoCLI) buildTempFile(suffix string, content string, temp *TempManager) string {
 	file := temp.NewFile(suffix)
 	file.WriteString(content)
 	if cli.debug {
@@ -48,7 +48,7 @@ func (cli *CardanoCLI) buildTempFile(suffix string, content string, temp *tempMa
 	return file.Name()
 }
 
-func (cli *CardanoCLI) buildTx(b txbuilder.TxBuilder, temp *tempManager) []string {
+func (cli *CardanoCLI) buildTx(b txbuilder.TxBuilder, temp *TempManager) []string {
 	var args []string
 	if b.IsRaw() {
 		args = []string{"transaction", "build-raw", "--alonzo-era", "--fee", strconv.FormatInt(b.Fee, 10)}

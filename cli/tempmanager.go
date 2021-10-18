@@ -7,12 +7,12 @@ import (
 	"os"
 )
 
-type tempManager struct {
+type TempManager struct {
 	openFiles []*os.File
 }
 
-func NewTempManager() (*tempManager, error) {
-	tm := new(tempManager)
+func NewTempManager() (*TempManager, error) {
+	tm := new(TempManager)
 
 	// test if we can create temp file and write to it
 	testFile, err := ioutil.TempFile("", "testnet-api-test-")
@@ -30,7 +30,7 @@ func NewTempManager() (*tempManager, error) {
 	return tm, nil
 }
 
-func (tm *tempManager) NewFile(suffix string) *os.File {
+func (tm *TempManager) NewFile(suffix string) *os.File {
 	file, err := ioutil.TempFile("", fmt.Sprintf("testnet-api-%s-", suffix))
 	if err != nil {
 		// We know it will likely succeed because we test ioutil.TempFile when initialize TempManager, but we still log for auditing exceptions.
@@ -41,7 +41,7 @@ func (tm *tempManager) NewFile(suffix string) *os.File {
 	return file
 }
 
-func (tm *tempManager) Clean() {
+func (tm *TempManager) Clean() {
 	for _, file := range tm.openFiles {
 		file.Close()
 		os.Remove(file.Name())
