@@ -52,7 +52,7 @@ func New(options Options) (*CardanoCLI, error) {
 	return cli, nil
 }
 
-func (c *CardanoCLI) run(args ...string) ([]byte, error) {
+func (c *CardanoCLI) Run(args ...string) ([]byte, error) {
 	if c.debug {
 		log.Printf("run:\n\ncardano-cli %s\n", FormatCLIArgs(args...))
 	}
@@ -64,17 +64,17 @@ func (c *CardanoCLI) run(args ...string) ([]byte, error) {
 	return out, nil
 }
 
-func (c *CardanoCLI) runWithNetwork(args ...string) ([]byte, error) {
+func (c *CardanoCLI) RunWithNetwork(args ...string) ([]byte, error) {
 	if c.networkID == NetworkMainnet {
 		args = append(args, "--mainnet")
 	} else {
 		args = append(args, "--testnet-magic", strconv.FormatInt(int64(c.networkID), 10))
 	}
-	return c.run(args...)
+	return c.Run(args...)
 }
 
 func (c *CardanoCLI) initProtocolParamsFile() error {
-	out, err := c.runWithNetwork("query", "protocol-parameters")
+	out, err := c.RunWithNetwork("query", "protocol-parameters")
 	if err != nil {
 		return fmt.Errorf("fail to query protocol-parameters: %w", err)
 	}
@@ -85,7 +85,7 @@ func (c *CardanoCLI) initProtocolParamsFile() error {
 }
 
 func (c *CardanoCLI) GetTip() (*Tip, error) {
-	out, err := c.runWithNetwork("query", "tip")
+	out, err := c.RunWithNetwork("query", "tip")
 	if err != nil {
 		return nil, fmt.Errorf("fail to query tip: %w", err)
 	}
@@ -97,7 +97,7 @@ func (c *CardanoCLI) GetTip() (*Tip, error) {
 }
 
 func (c *CardanoCLI) GetAllUtxos() ([]ledger.Utxo, error) {
-	out, err := c.runWithNetwork("query", "utxo", "--whole-utxo")
+	out, err := c.RunWithNetwork("query", "utxo", "--whole-utxo")
 	if err != nil {
 		return nil, fmt.Errorf("fail to query utxo: %w", err)
 	}
@@ -109,7 +109,7 @@ func (c *CardanoCLI) GetAllUtxos() ([]ledger.Utxo, error) {
 }
 
 func (c *CardanoCLI) GetUtxosByAddress(addr string) ([]ledger.Utxo, error) {
-	out, err := c.runWithNetwork("query", "utxo", "--address", addr)
+	out, err := c.RunWithNetwork("query", "utxo", "--address", addr)
 	if err != nil {
 		return nil, fmt.Errorf("fail to query utxo: %w", err)
 	}
@@ -131,15 +131,15 @@ func (c *CardanoCLI) BuildTx(txb txbuilder.TxBuilder) (tx *Tx, err error) {
 
 	// Build tx
 	rawTx := tempManager.NewFile("raw-tx")
-	args := c.buildTx(txb, tempManager, false)
+	args := c.buildTx(txb, tempManager)
 	args = append(args, "--out-file", rawTx.Name())
 	if txb.IsRaw() {
-		_, err = c.run(args...)
+		_, err = c.Run(args...)
 		if err != nil {
 			return nil, fmt.Errorf("fail to use cardano-cli to build tx: %w", err)
 		}
 	} else {
-		_, err = c.runWithNetwork(args...)
+		_, err = c.RunWithNetwork(args...)
 		if err != nil {
 			return nil, fmt.Errorf("fail to use cardano-cli to build tx: %w", err)
 		}
@@ -154,7 +154,7 @@ func (c *CardanoCLI) BuildTx(txb txbuilder.TxBuilder) (tx *Tx, err error) {
 	if err := json.Unmarshal(cborFileBytes, &cborFile); err != nil {
 		return nil, fmt.Errorf("fail to decode cbor file: %w", err)
 	}
-	txHashHex, err := c.run("transaction", "txid", "--tx-body-file", rawTx.Name())
+	txHashHex, err := c.Run("transaction", "txid", "--tx-body-file", rawTx.Name())
 	if err != nil {
 		return nil, fmt.Errorf("fail to get tx hash: %w", err)
 	}
@@ -191,7 +191,7 @@ func (c *CardanoCLI) SubmitTxWithSkey(tx *Tx, skeyFilePath string) error {
 
 	// Sign tx
 	signedTx := tempManager.NewFile("sign-tx")
-	if _, err := c.runWithNetwork("transaction", "sign",
+	if _, err := c.RunWithNetwork("transaction", "sign",
 		"--tx-body-file", txBody.Name(),
 		"--signing-key-file", skeyFilePath,
 		"--out-file", signedTx.Name(),
@@ -200,7 +200,7 @@ func (c *CardanoCLI) SubmitTxWithSkey(tx *Tx, skeyFilePath string) error {
 	}
 
 	// Submit tx
-	if _, err := c.runWithNetwork("transaction", "submit", "--tx-file", signedTx.Name()); err != nil {
+	if _, err := c.RunWithNetwork("transaction", "submit", "--tx-file", signedTx.Name()); err != nil {
 		return fmt.Errorf("fail to submit tx: %w", err)
 	}
 
@@ -208,7 +208,7 @@ func (c *CardanoCLI) SubmitTxWithSkey(tx *Tx, skeyFilePath string) error {
 }
 
 func (c *CardanoCLI) GetPolicyID(policyPath string) (string, error) {
-	out, err := c.run("transaction", "policyid", "--script-file", policyPath)
+	out, err := c.Run("transaction", "policyid", "--script-file", policyPath)
 	if err != nil {
 		return "", fmt.Errorf("fail to get policyID: %w", err)
 	}
@@ -216,7 +216,7 @@ func (c *CardanoCLI) GetPolicyID(policyPath string) (string, error) {
 }
 
 func (c *CardanoCLI) GetScriptAddress(scriptPath string) (string, error) {
-	out, err := c.runWithNetwork("address", "build", "--payment-script-file", scriptPath)
+	out, err := c.RunWithNetwork("address", "build", "--payment-script-file", scriptPath)
 	if err != nil {
 		return "", fmt.Errorf("fail to get script address: %w", err)
 	}
@@ -236,7 +236,7 @@ func (c *CardanoCLI) GetDatumHash(datum string) (string, error) {
 	if _, err := datumFile.WriteString(datum); err != nil {
 		return "", fmt.Errorf("fail to write datum file: %w", err)
 	}
-	out, err := c.run("transaction", "hash-script-data", "--script-data-file", datumFile.Name())
+	out, err := c.Run("transaction", "hash-script-data", "--script-data-file", datumFile.Name())
 	if err != nil {
 		return "", fmt.Errorf("fail to hash datum: %w", err)
 	}
@@ -286,7 +286,7 @@ func (c *CardanoCLI) SubmitTx(tx *Tx, witnesses string) error {
 
 	// Create signed tx file
 	signedTx := tempManager.NewFile("signed-tx")
-	if _, err := c.run("transaction", "assemble",
+	if _, err := c.Run("transaction", "assemble",
 		"--tx-body-file", txBody.Name(),
 		"--witness-file", witness.Name(),
 		"--out-file", signedTx.Name(),
@@ -295,7 +295,7 @@ func (c *CardanoCLI) SubmitTx(tx *Tx, witnesses string) error {
 	}
 
 	// Submit tx
-	if _, err := c.runWithNetwork("transaction", "submit", "--tx-file", signedTx.Name()); err != nil {
+	if _, err := c.RunWithNetwork("transaction", "submit", "--tx-file", signedTx.Name()); err != nil {
 		return fmt.Errorf("fail to submit tx: %w", err)
 	}
 	return nil
