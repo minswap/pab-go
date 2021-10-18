@@ -101,3 +101,20 @@ func (val Value) MinimumADA(isScriptUtxo bool) *big.Int {
 
 	return big.NewInt(int64(minLovelace))
 }
+
+func OfADA(x int64) Value {
+	amount := big.NewInt(x)
+	amount.Mul(amount, big.NewInt(1_000_000))
+	val := NewValue()
+	val.Add(ADA, amount)
+	return val
+}
+
+func Singleton(c Asset, x *big.Int) Value {
+	v := NewValue()
+	if x == nil {
+		x = big.NewInt(0)
+	}
+	v.Add(c, x)
+	return v
+}
