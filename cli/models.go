@@ -1,6 +1,6 @@
 package cli
 
-type cborFile struct {
+type CborFile struct {
 	Type        string `json:"type"`
 	Description string `json:"description"`
 	CBORHex     string `json:"cborHex"`
