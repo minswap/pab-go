@@ -150,7 +150,7 @@ func (c *CardanoCLI) BuildTx(txb txbuilder.TxBuilder) (tx *Tx, err error) {
 	if err != nil {
 		return nil, fmt.Errorf("fail to read tx build out file: %w", err)
 	}
-	cborFile := new(cborFile)
+	cborFile := new(CborFile)
 	if err := json.Unmarshal(cborFileBytes, &cborFile); err != nil {
 		return nil, fmt.Errorf("fail to decode cbor file: %w", err)
 	}
@@ -177,7 +177,7 @@ func (c *CardanoCLI) SubmitTxWithSkey(tx *Tx, skeyFilePath string) error {
 
 	// Write tx body file
 	txBody := tempManager.NewFile("tx-body")
-	content, err := json.Marshal(cborFile{
+	content, err := json.Marshal(CborFile{
 		Type:        "TxBodyAlonzo",
 		Description: "",
 		CBORHex:     tx.TxBody,
@@ -258,7 +258,7 @@ func (c *CardanoCLI) SubmitTx(tx *Tx, witnesses string) error {
 
 	// Write tx body file
 	txBody := tempManager.NewFile("tx-body")
-	content, err := json.Marshal(cborFile{
+	content, err := json.Marshal(CborFile{
 		Type:        "TxBodyAlonzo",
 		Description: "",
 		CBORHex:     tx.TxBody,
@@ -272,7 +272,7 @@ func (c *CardanoCLI) SubmitTx(tx *Tx, witnesses string) error {
 
 	// Write witness file
 	witness := tempManager.NewFile("tx-witness")
-	content, err = json.Marshal(cborFile{
+	content, err = json.Marshal(CborFile{
 		Type:        "TxWitness AlonzoEra",
 		Description: "",
 		CBORHex:     witnesses,
