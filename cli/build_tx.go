@@ -48,7 +48,7 @@ func (cli *CardanoCLI) buildTempFile(suffix string, content string, temp *tempMa
 	return file.Name()
 }
 
-func (cli *CardanoCLI) buildTx(b txbuilder.TxBuilder, temp *tempManager, hack bool) []string {
+func (cli *CardanoCLI) buildTx(b txbuilder.TxBuilder, temp *tempManager) []string {
 	var args []string
 	if b.IsRaw() {
 		args = []string{"transaction", "build-raw", "--alonzo-era", "--fee", strconv.FormatInt(b.Fee, 10)}
