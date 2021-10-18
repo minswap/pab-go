@@ -23,27 +23,27 @@ type Options struct {
 }
 
 type CardanoCLI struct {
-	cliPath            string
-	networkID          NetworkID
-	protocolParamsPath string
-	debug              bool
+	CliPath            string
+	NetworkID          NetworkID
+	ProtocolParamsPath string
+	Debug              bool
 }
 
 func New(options Options) (*CardanoCLI, error) {
 	cli := &CardanoCLI{
-		cliPath:            options.CLIPath,
-		networkID:          options.NetworkID,
-		protocolParamsPath: options.ProtocolParamsPath,
-		debug:              options.Debug,
+		CliPath:            options.CLIPath,
+		NetworkID:          options.NetworkID,
+		ProtocolParamsPath: options.ProtocolParamsPath,
+		Debug:              options.Debug,
 	}
-	if cli.cliPath == "" {
-		cli.cliPath = "cardano-cli"
+	if cli.CliPath == "" {
+		cli.CliPath = "cardano-cli"
 	}
-	if cli.networkID == 0 {
-		cli.networkID = NetworkTestnet
+	if cli.NetworkID == 0 {
+		cli.NetworkID = NetworkTestnet
 	}
-	if cli.protocolParamsPath == "" {
-		cli.protocolParamsPath = "protocol-params.json"
+	if cli.ProtocolParamsPath == "" {
+		cli.ProtocolParamsPath = "protocol-params.json"
 	}
 
 	if err := cli.initProtocolParamsFile(); err != nil {
@@ -53,11 +53,11 @@ func New(options Options) (*CardanoCLI, error) {
 }
 
 func (c *CardanoCLI) Run(args ...string) ([]byte, error) {
-	if c.debug {
+	if c.Debug {
 		log.Printf("run:\n\ncardano-cli %s\n", FormatCLIArgs(args...))
 	}
 
-	out, err := exec.Command(c.cliPath, args...).CombinedOutput()
+	out, err := exec.Command(c.CliPath, args...).CombinedOutput()
 	if err != nil {
 		return nil, NewCLIError(fmt.Sprintf("%v: %s", err, out), args)
 	}
@@ -65,10 +65,10 @@ func (c *CardanoCLI) Run(args ...string) ([]byte, error) {
 }
 
 func (c *CardanoCLI) RunWithNetwork(args ...string) ([]byte, error) {
-	if c.networkID == NetworkMainnet {
+	if c.NetworkID == NetworkMainnet {
 		args = append(args, "--mainnet")
 	} else {
-		args = append(args, "--testnet-magic", strconv.FormatInt(int64(c.networkID), 10))
+		args = append(args, "--testnet-magic", strconv.FormatInt(int64(c.NetworkID), 10))
 	}
 	return c.Run(args...)
 }
@@ -78,7 +78,7 @@ func (c *CardanoCLI) initProtocolParamsFile() error {
 	if err != nil {
 		return fmt.Errorf("fail to query protocol-parameters: %w", err)
 	}
-	if err := os.WriteFile(c.protocolParamsPath, out, 0644); err != nil {
+	if err := os.WriteFile(c.ProtocolParamsPath, out, 0644); err != nil {
 		return fmt.Errorf("fail to write protocol params file: %w", err)
 	}
 	return nil

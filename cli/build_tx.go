@@ -42,7 +42,7 @@ func buildOutput(o txbuilder.TxOutput) string {
 func (cli *CardanoCLI) buildTempFile(suffix string, content string, temp *TempManager) string {
 	file := temp.NewFile(suffix)
 	file.WriteString(content)
-	if cli.debug {
+	if cli.Debug {
 		log.Printf("%s has content: %s\n", file.Name(), content)
 	}
 	return file.Name()
@@ -115,6 +115,6 @@ func (cli *CardanoCLI) buildTx(b txbuilder.TxBuilder, temp *TempManager) []strin
 		args = append(args, "--mint", buildValue(forgeVal))
 	}
 
-	args = append(args, "--protocol-params-file", cli.protocolParamsPath)
+	args = append(args, "--protocol-params-file", cli.ProtocolParamsPath)
 	return args
 }
