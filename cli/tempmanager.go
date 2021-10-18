@@ -11,7 +11,7 @@ type tempManager struct {
 	openFiles []*os.File
 }
 
-func newTempManager() (*tempManager, error) {
+func NewTempManager() (*tempManager, error) {
 	tm := new(tempManager)
 
 	// test if we can create temp file and write to it
