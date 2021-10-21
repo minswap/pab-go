@@ -71,6 +71,14 @@ func (v Value) Contains(c Asset) bool {
 	return ok
 }
 
+func (v Value) Assets() []Asset {
+	keys := make([]Asset, 0, len(v))
+	for a := range v {
+		keys = append(keys, a)
+	}
+	return keys
+}
+
 func (val Value) MinimumADA(isScriptUtxo bool) *big.Int {
 	newVal := val.Clone()
 	newVal.RemoveAsset(ADA)
