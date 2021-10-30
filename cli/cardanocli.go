@@ -23,7 +23,7 @@ type Options struct {
 }
 
 type CardanoCLI struct {
-	CliPath            string
+	CLIPath            string
 	NetworkID          NetworkID
 	ProtocolParamsPath string
 	Debug              bool
@@ -31,13 +31,13 @@ type CardanoCLI struct {
 
 func New(options Options) (*CardanoCLI, error) {
 	cli := &CardanoCLI{
-		CliPath:            options.CLIPath,
+		CLIPath:            options.CLIPath,
 		NetworkID:          options.NetworkID,
 		ProtocolParamsPath: options.ProtocolParamsPath,
 		Debug:              options.Debug,
 	}
-	if cli.CliPath == "" {
-		cli.CliPath = "cardano-cli"
+	if cli.CLIPath == "" {
+		cli.CLIPath = "cardano-cli"
 	}
 	if cli.NetworkID == 0 {
 		cli.NetworkID = NetworkTestnet
@@ -57,7 +57,7 @@ func (c *CardanoCLI) Run(args ...string) ([]byte, error) {
 		log.Printf("run:\n\ncardano-cli %s\n", FormatCLIArgs(args...))
 	}
 
-	out, err := exec.Command(c.CliPath, args...).CombinedOutput()
+	out, err := exec.Command(c.CLIPath, args...).CombinedOutput()
 	if err != nil {
 		return nil, NewCLIError(fmt.Sprintf("%v: %s", err, out), args)
 	}
@@ -150,7 +150,7 @@ func (c *CardanoCLI) BuildTx(txb txbuilder.TxBuilder) (tx *Tx, err error) {
 	if err != nil {
 		return nil, fmt.Errorf("fail to read tx build out file: %w", err)
 	}
-	cborFile := new(CborFile)
+	cborFile := new(CBORFile)
 	if err := json.Unmarshal(cborFileBytes, &cborFile); err != nil {
 		return nil, fmt.Errorf("fail to decode cbor file: %w", err)
 	}
@@ -177,7 +177,7 @@ func (c *CardanoCLI) SubmitTxWithSkey(tx *Tx, skeyFilePath string) error {
 
 	// Write tx body file
 	txBody := tempManager.NewFile("tx-body")
-	content, err := json.Marshal(CborFile{
+	content, err := json.Marshal(CBORFile{
 		Type:        "TxBodyAlonzo",
 		Description: "",
 		CBORHex:     tx.TxBody,
@@ -258,7 +258,7 @@ func (c *CardanoCLI) SubmitTx(tx *Tx, witnesses string) error {
 
 	// Write tx body file
 	txBody := tempManager.NewFile("tx-body")
-	content, err := json.Marshal(CborFile{
+	content, err := json.Marshal(CBORFile{
 		Type:        "TxBodyAlonzo",
 		Description: "",
 		CBORHex:     tx.TxBody,
@@ -272,7 +272,7 @@ func (c *CardanoCLI) SubmitTx(tx *Tx, witnesses string) error {
 
 	// Write witness file
 	witness := tempManager.NewFile("tx-witness")
-	content, err = json.Marshal(CborFile{
+	content, err = json.Marshal(CBORFile{
 		Type:        "TxWitness AlonzoEra",
 		Description: "",
 		CBORHex:     witnesses,
