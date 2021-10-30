@@ -37,12 +37,3 @@ func SumValueOfUtxos(utxos []Utxo) Value {
 	}
 	return val
 }
-
-func Contains(utxos []Utxo, elem Utxo) bool {
-	for _, utxo := range utxos {
-		if utxo.TxID == elem.TxID && utxo.TxIndex == elem.TxIndex {
-			return true
-		}
-	}
-	return false
-}
