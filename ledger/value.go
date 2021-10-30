@@ -25,45 +25,51 @@ func (v Value) Clone() Value {
 	return w
 }
 
-func (v Value) Add(asset Asset, amount *big.Int) {
+func (v Value) Add(asset Asset, amount *big.Int) Value {
 	if _, ok := v[asset]; !ok {
 		v[asset] = big.NewInt(0)
 	}
 	v[asset].Add(v[asset], amount)
+	return v
 }
 
-func (v Value) AddMinimumADA(isScriptUtxo bool) {
+func (v Value) AddMinimumADA(isScriptUtxo bool) Value {
 	min := v.MinimumADA(isScriptUtxo)
 	if !v.Contains(ADA) || v[ADA].Cmp(min) < 0 {
 		v[ADA] = min
 	}
+	return v
 }
 
 // Remove subtract asset amount in Value and remove asset if amount is negative
-func (v Value) Remove(asset Asset, amount *big.Int) {
+func (v Value) Remove(asset Asset, amount *big.Int) Value {
 	if _, ok := v[asset]; !ok {
-		return
+		return v
 	}
 	v[asset].Sub(v[asset], amount)
 	if v[asset].Cmp(big.NewInt(0)) <= 0 {
 		v.RemoveAsset(asset)
 	}
+	return v
 }
 
-func (v Value) AddAll(w Value) {
+func (v Value) AddAll(w Value) Value {
 	for asset, amount := range w {
 		v.Add(asset, amount)
 	}
+	return v
 }
 
-func (v Value) RemoveAll(w Value) {
+func (v Value) RemoveAll(w Value) Value {
 	for asset, amount := range w {
 		v.Remove(asset, amount)
 	}
+	return v
 }
 
-func (v Value) RemoveAsset(c Asset) {
+func (v Value) RemoveAsset(c Asset) Value {
 	delete(v, c)
+	return v
 }
 
 func (v Value) Contains(c Asset) bool {
