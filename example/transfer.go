@@ -23,7 +23,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	utxos, err := cli.GetUtxosByAddress(senderAddr)
+	utxos, err := cli.GetUtxosByAddresses(senderAddr)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -11,6 +11,11 @@ type Tx struct {
 	TxBody string `json:"txBody"`
 }
 
+type TxIn struct {
+	TxID    string `json:"txID"`
+	TxIndex int    `json:"txIndex"`
+}
+
 type Tip struct {
 	Epoch        int    `json:"epoch"`
 	Hash         string `json:"hash"`
