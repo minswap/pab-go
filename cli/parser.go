@@ -1,98 +1,89 @@
 package cli
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"math/big"
+	"os"
 	"strconv"
 	"strings"
 
 	"github.com/minswap/pab-go/ledger"
 )
 
-// Example:
-// 10000 lovelace
-// 10000 currencysymbol.tokenname
-func parseFund(s string) (c ledger.Asset, amount *big.Int, err error) {
-	fields := strings.Split(s, " ")
-	amount = big.NewInt(0)
-	if _, ok := amount.SetString(fields[0], 10); !ok {
-		return c, nil, fmt.Errorf("fail to parse integer amount: %s", fields[0])
-	}
-	if fields[1] == "lovelace" {
-		c = ledger.ADA
-	} else {
-		assetParts := strings.Split(fields[1], ".")
-		if len(assetParts) == 1 {
-			c = ledger.NewAsset(assetParts[0], "")
-		} else {
-			c = ledger.NewAsset(assetParts[0], assetParts[1])
-		}
-	}
-	return c, amount, nil
+type QueryUtxoOutFile = map[string]struct {
+	Address string                     `json:"address"`
+	Value   map[string]json.RawMessage `json:"value"`
+	Data    *string                    `json:"data"`
 }
 
-// Example:
-// TxOutDatumHashNone
-// TxOutDatumHash ScriptDataInAlonzoEra "9e1199a988ba72ffd6e9c269cadb3b53b5f360ff99f112d9b2ee30c4d74ad88b"
-func parseDatumHash(s string) *string {
-	if s == "TxOutDatumHashNone" {
-		return nil
+func parseTxIdTxIx(input string) (txId string, txIx int, err error) {
+	fields := strings.Split(input, "#")
+	if len(fields) != 2 {
+		return "", 0, fmt.Errorf("expect format txId#txIx, got %s", input)
 	}
-	hash := s[len(s)-65 : len(s)-1]
-	return &hash
+	txIx, err = strconv.Atoi(fields[1])
+	if err != nil {
+		return "", 0, fmt.Errorf("error when parse txIx: %s: %w", fields[1], err)
+	}
+	return fields[0], txIx, nil
 }
 
-func parseFundsAndDatum(s string) (funds ledger.Value, datumHash *string, err error) {
-	fields := strings.Split(s, " + ")
-	funds = ledger.NewValue()
-	// Skip last field because it's datum
-	for _, field := range fields[:len(fields)-1] {
-		asset, amount, err := parseFund(field)
-		if err != nil {
-			return nil, nil, fmt.Errorf("fail to parse fund: %w", err)
-		}
-		funds.Add(asset, amount)
-	}
-	datumHash = parseDatumHash(fields[len(fields)-1])
-	return funds, datumHash, err
-}
-
-func parseUtxoOutput(addr string, output string) (utxos []ledger.Utxo, err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			utxos = nil
-			err = fmt.Errorf("panic when parse utxo output: %v", r)
-		}
-	}()
-
-	lines := strings.Split(output, "\n")
-	// Skip first 2 header lines
-	lines = lines[2:]
-	for _, line := range lines {
-		// Skip blank line
-		if strings.TrimSpace(line) == "" {
+func parseValue(input map[string]json.RawMessage) (ledger.Value, error) {
+	val := ledger.NewValue()
+	for currencySymbol, raw := range input {
+		if currencySymbol == "lovelace" {
+			amount, ok := new(big.Int).SetString(string(raw), 10)
+			if !ok {
+				return nil, fmt.Errorf("fail to parse lovelace amount: %s", raw)
+			}
+			val[ledger.ADA] = amount
 			continue
 		}
-		fields := strings.Fields(line)
-		txId := fields[0]
-		txIndex, err := strconv.Atoi(fields[1])
-		if err != nil {
-			return nil, fmt.Errorf("fail to parse tx index: %w", err)
-		}
 
-		funds, datumHash, err := parseFundsAndDatum(strings.Join(fields[2:], " "))
-		if err != nil {
-			return nil, fmt.Errorf("fail to parse funds and datum hash: %w", err)
+		var tokenNameMap map[string]*big.Int
+		if err := json.Unmarshal(raw, &tokenNameMap); err != nil {
+			return nil, fmt.Errorf("fail to decode map of token name to amount: %w", err)
 		}
+		for tokenName, amount := range tokenNameMap {
+			val.Add(ledger.NewAsset(currencySymbol, tokenName), amount)
+		}
+	}
+	return val, nil
+}
 
+func parseQueryUtxoOutput(outputBytes []byte) ([]ledger.Utxo, error) {
+	var output QueryUtxoOutFile
+	if err := json.Unmarshal(outputBytes, &output); err != nil {
+		return nil, fmt.Errorf("fail to decode query utxo output: %w", err)
+	}
+	utxos := make([]ledger.Utxo, 0)
+	for txIdTxIx, txOut := range output {
+		txId, txIx, err := parseTxIdTxIx(txIdTxIx)
+		if err != nil {
+			return nil, fmt.Errorf("fail to parse txIdTxIx: %w", err)
+		}
+		val, err := parseValue(txOut.Value)
+		if err != nil {
+			return nil, fmt.Errorf("fail to parse txOut value: %w", err)
+		}
 		utxo := ledger.Utxo{
 			TxID:      txId,
-			TxIndex:   txIndex,
-			Address:   addr,
-			Value:     funds,
-			DatumHash: datumHash,
+			TxIndex:   txIx,
+			Address:   txOut.Address,
+			Value:     val,
+			DatumHash: txOut.Data,
 		}
 		utxos = append(utxos, utxo)
 	}
 	return utxos, nil
+}
+
+func parseQueryUtxoOutFile(file *os.File) ([]ledger.Utxo, error) {
+	outputBytes, err := io.ReadAll(file)
+	if err != nil {
+		return nil, fmt.Errorf("fail to read query utxo out file: %w", err)
+	}
+	return parseQueryUtxoOutput(outputBytes)
 }

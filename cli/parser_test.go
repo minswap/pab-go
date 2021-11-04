@@ -1,54 +1,31 @@
 package cli
 
 import (
-	"fmt"
-	"math/big"
 	"testing"
 
-	"github.com/minswap/pab-go/ledger"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
-func TestParseFund(t *testing.T) {
-	t.Parallel()
-	tests := []struct {
-		in        string
-		outAsset  ledger.Asset
-		outAmount *big.Int
-	}{
-		{
-			"10000 lovelace",
-			ledger.ADA,
-			big.NewInt(10000),
+func TestParseQueryUtxoOutput(t *testing.T) {
+	testcase := `{
+		"52db772a86ccc918a71ed3a6881692010f05f29b2839e7dc4c5ca95c129261fa#0": {
+			"address": "addr_test1qzq29qg6d4m5w52e4w06ejn6l85ekthvnudcr6y5c7ka0q404j5fcr8xjh6djzmhkjuy2erva0f8dtvuz247tg2tz73snk0rtt",
+			"value": {
+				"c13eaa5804a65587ec36db51d21bcd8847efea3627e8a07e12cf304b": {
+					"tMIN": 5000000000000000,
+					"": 45000000000000000
+				},
+				"lovelace": 3000000000000
+			}
 		},
-		{
-			"10000 9e1199a988ba72ffd6e9c269cadb3b53b5f360ff99f112d9b2ee30c4d74ad88b.MIN",
-			ledger.NewAsset("9e1199a988ba72ffd6e9c269cadb3b53b5f360ff99f112d9b2ee30c4d74ad88b", "MIN"),
-			big.NewInt(10000),
-		},
-		{
-			"10000 9e1199a988ba72ffd6e9c269cadb3b53b5f360ff99f112d9b2ee30c4d74ad88b",
-			ledger.NewAsset("9e1199a988ba72ffd6e9c269cadb3b53b5f360ff99f112d9b2ee30c4d74ad88b", ""),
-			big.NewInt(10000),
-		},
-	}
-	for i, tt := range tests {
-		tt := tt
-		t.Run(fmt.Sprintf("TestParseFund#%v", i), func(t *testing.T) {
-			t.Parallel()
-			asset, amount, err := parseFund(tt.in)
-			require.NoError(t, err)
-			assert.Equal(t, tt.outAsset, asset)
-			assert.Equal(t, tt.outAmount.Cmp(amount), 0)
-		})
-	}
-}
-
-func TestParseDatumHash(t *testing.T) {
-	assert.Nil(t, nil, parseDatumHash("TxOutDatumHashNone"))
-	assert.Equal(t,
-		"9e1199a988ba72ffd6e9c269cadb3b53b5f360ff99f112d9b2ee30c4d74ad88b",
-		*parseDatumHash("TxOutDatumHash ScriptDataInAlonzoEra \"9e1199a988ba72ffd6e9c269cadb3b53b5f360ff99f112d9b2ee30c4d74ad88b\""),
-	)
+		"e18888b1f8559e59f479e72ee3f7e02dca395f5ee6f6b9a84ed67ffc02473d5d#2": {
+			"address": "addr_test1wr37myp6qxqjd5g2de002z27zecggjfwqgdwn0wav8m4y3ggavlh3",
+			"data": "7bb1486cc7fdd7b16f42afcec19183c5f2bb5f92c43cc3e2c9c56de5bb390116",
+			"value": {
+					"lovelace": 2007000000
+			}
+		}
+	}`
+	_, err := parseQueryUtxoOutput([]byte(testcase))
+	assert.NoError(t, err)
 }

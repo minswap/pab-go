@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -97,23 +97,69 @@ func (c *CardanoCLI) GetTip() (*Tip, error) {
 }
 
 func (c *CardanoCLI) GetAllUtxos() ([]ledger.Utxo, error) {
-	out, err := c.RunWithNetwork("query", "utxo", "--whole-utxo")
+	tempManager, err := NewTempManager()
+	if err != nil {
+		return nil, fmt.Errorf("fail to create TempManager: %w", err)
+	}
+	defer func() {
+		tempManager.Clean()
+	}()
+
+	out := tempManager.NewFile("query-utxo")
+	_, err = c.RunWithNetwork("query", "utxo", "--whole-utxo", "--out-file", out.Name())
 	if err != nil {
 		return nil, fmt.Errorf("fail to query utxo: %w", err)
 	}
-	utxos, err := parseUtxoOutput("", string(out))
+	utxos, err := parseQueryUtxoOutFile(out)
 	if err != nil {
 		return nil, fmt.Errorf("fail to parse utxos: %w", err)
 	}
 	return utxos, nil
 }
 
-func (c *CardanoCLI) GetUtxosByAddress(addr string) ([]ledger.Utxo, error) {
-	out, err := c.RunWithNetwork("query", "utxo", "--address", addr)
+// GetUtxosByAddresses return utxos from Bech32-encoded address(es)
+func (c *CardanoCLI) GetUtxosByAddresses(addresses ...string) ([]ledger.Utxo, error) {
+	tempManager, err := NewTempManager()
 	if err != nil {
+		return nil, fmt.Errorf("fail to create TempManager: %w", err)
+	}
+	defer func() {
+		tempManager.Clean()
+	}()
+
+	out := tempManager.NewFile("query-utxo")
+	args := []string{"query", "utxo", "--out-file", out.Name()}
+	for _, addr := range addresses {
+		args = append(args, "--address", addr)
+	}
+	if _, err := c.RunWithNetwork(args...); err != nil {
 		return nil, fmt.Errorf("fail to query utxo: %w", err)
 	}
-	utxos, err := parseUtxoOutput(addr, string(out))
+	utxos, err := parseQueryUtxoOutFile(out)
+	if err != nil {
+		return nil, fmt.Errorf("fail to parse utxos: %w", err)
+	}
+	return utxos, nil
+}
+
+func (c *CardanoCLI) GetUtxosByTxIns(txIns ...TxIn) ([]ledger.Utxo, error) {
+	tempManager, err := NewTempManager()
+	if err != nil {
+		return nil, fmt.Errorf("fail to create TempManager: %w", err)
+	}
+	defer func() {
+		tempManager.Clean()
+	}()
+
+	out := tempManager.NewFile("query-utxo")
+	args := []string{"query", "utxo", "--out-file", out.Name()}
+	for _, in := range txIns {
+		args = append(args, "--tx-in", fmt.Sprintf("%s#%d", in.TxID, in.TxIndex))
+	}
+	if _, err := c.RunWithNetwork(args...); err != nil {
+		return nil, fmt.Errorf("fail to query utxo: %w", err)
+	}
+	utxos, err := parseQueryUtxoOutFile(out)
 	if err != nil {
 		return nil, fmt.Errorf("fail to parse utxos: %w", err)
 	}
@@ -146,7 +192,7 @@ func (c *CardanoCLI) BuildTx(txb txbuilder.TxBuilder) (tx *Tx, err error) {
 	}
 
 	// Read raw tx
-	cborFileBytes, err := ioutil.ReadAll(rawTx)
+	cborFileBytes, err := io.ReadAll(rawTx)
 	if err != nil {
 		return nil, fmt.Errorf("fail to read tx build out file: %w", err)
 	}

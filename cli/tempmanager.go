@@ -17,14 +17,14 @@ func NewTempManager() (*TempManager, error) {
 	// test if we can create temp file and write to it
 	testFile, err := ioutil.TempFile("", "testnet-api-test-")
 	if err != nil {
-		return nil, fmt.Errorf("fail to create temp file: %w", err)
+		return nil, fmt.Errorf("tempmanager: fail to create temp file: %w", err)
 	}
 	defer func() {
 		testFile.Close()
 		os.Remove(testFile.Name())
 	}()
 	if _, err := testFile.WriteString("test"); err != nil {
-		return nil, fmt.Errorf("fail to write to temp file: %w", err)
+		return nil, fmt.Errorf("tempmanager: fail to write to temp file: %w", err)
 	}
 
 	return tm, nil
