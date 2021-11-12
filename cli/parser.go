@@ -15,7 +15,7 @@ import (
 type QueryUtxoOutFile = map[string]struct {
 	Address string                     `json:"address"`
 	Value   map[string]json.RawMessage `json:"value"`
-	Data    *string                    `json:"data"`
+	Data    *string                    `json:"datumhash"`
 }
 
 func parseTxIdTxIx(input string) (txId string, txIx int, err error) {
