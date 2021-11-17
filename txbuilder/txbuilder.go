@@ -46,6 +46,11 @@ type Burning struct {
 	ExCPU          int64
 }
 
+type ValidRange struct {
+	From int64
+	To   int64
+}
+
 type TxBuilder struct {
 	PubKeyInputs  []TxInput
 	ScriptInputs  []ScriptInput
@@ -56,6 +61,7 @@ type TxBuilder struct {
 	ChangeAddress string
 	Fee           int64
 	Collaterals   []TxInput
+	ValidRange    *ValidRange
 }
 
 type Option = func(b *TxBuilder)
@@ -215,5 +221,14 @@ func UseCollaterals(utxos ...ledger.Utxo) Option {
 func PayFee(x int64) Option {
 	return func(b *TxBuilder) {
 		b.Fee = x
+	}
+}
+
+func SetValidRange(from int64, to int64) Option {
+	return func(b *TxBuilder) {
+		b.ValidRange = &ValidRange{
+			From: from,
+			To:   to,
+		}
 	}
 }

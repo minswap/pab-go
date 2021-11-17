@@ -114,6 +114,12 @@ func (cli *CardanoCLI) buildTx(b txbuilder.TxBuilder, temp *TempManager) []strin
 	if len(forgeVal) > 0 {
 		args = append(args, "--mint", buildValue(forgeVal))
 	}
+	if b.ValidRange != nil {
+		args = append(args,
+			"--invalid-before", fmt.Sprintf("%d", b.ValidRange.From),
+			"--invalid-hereafter", fmt.Sprintf("%d", b.ValidRange.To),
+		)
+	}
 
 	args = append(args, "--protocol-params-file", cli.ProtocolParamsPath)
 	return args
