@@ -20,7 +20,7 @@ func TestParseQueryUtxoOutput(t *testing.T) {
 		},
 		"e18888b1f8559e59f479e72ee3f7e02dca395f5ee6f6b9a84ed67ffc02473d5d#2": {
 			"address": "addr_test1wr37myp6qxqjd5g2de002z27zecggjfwqgdwn0wav8m4y3ggavlh3",
-			"data": "7bb1486cc7fdd7b16f42afcec19183c5f2bb5f92c43cc3e2c9c56de5bb390116",
+			"datumhash": "7bb1486cc7fdd7b16f42afcec19183c5f2bb5f92c43cc3e2c9c56de5bb390116",
 			"value": {
 					"lovelace": 2007000000
 			}
