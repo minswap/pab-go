@@ -47,15 +47,17 @@ type Burning struct {
 }
 
 type TxBuilder struct {
-	PubKeyInputs  []TxInput
-	ScriptInputs  []ScriptInput
-	PubKeyOutputs []TxOutput
-	ScriptOutputs []ScriptOutput
-	Minting       []Minting
-	Burning       []Burning
-	ChangeAddress string
-	Fee           int64
-	Collaterals   []TxInput
+	PubKeyInputs   []TxInput
+	ScriptInputs   []ScriptInput
+	PubKeyOutputs  []TxOutput
+	ScriptOutputs  []ScriptOutput
+	Minting        []Minting
+	Burning        []Burning
+	ChangeAddress  string
+	Fee            int64
+	Collaterals    []TxInput
+	ValidRangeFrom *int64
+	ValidRangeTo   *int64
 }
 
 type Option = func(b *TxBuilder)
@@ -215,5 +217,17 @@ func UseCollaterals(utxos ...ledger.Utxo) Option {
 func PayFee(x int64) Option {
 	return func(b *TxBuilder) {
 		b.Fee = x
+	}
+}
+
+func SetValidRangeFrom(from int64) Option {
+	return func(b *TxBuilder) {
+		b.ValidRangeFrom = &from
+	}
+}
+
+func SetValidRangeTo(to int64) Option {
+	return func(b *TxBuilder) {
+		b.ValidRangeTo = &to
 	}
 }
