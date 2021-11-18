@@ -116,12 +116,12 @@ func (cli *CardanoCLI) buildTx(b txbuilder.TxBuilder, temp *TempManager) []strin
 	}
 	if b.ValidRangeFrom != nil {
 		args = append(args,
-			"--invalid-before", fmt.Sprintf("%d", b.ValidRangeFrom),
+			"--invalid-before", fmt.Sprintf("%d", *b.ValidRangeFrom),
 		)
 	}
 	if b.ValidRangeTo != nil {
 		args = append(args,
-			"--invalid-hereafter", fmt.Sprintf("%d", b.ValidRangeTo),
+			"--invalid-hereafter", fmt.Sprintf("%d", *b.ValidRangeTo),
 		)
 	}
 
