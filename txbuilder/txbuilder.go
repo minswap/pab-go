@@ -46,22 +46,18 @@ type Burning struct {
 	ExCPU          int64
 }
 
-type ValidRange struct {
-	From int64
-	To   int64
-}
-
 type TxBuilder struct {
-	PubKeyInputs  []TxInput
-	ScriptInputs  []ScriptInput
-	PubKeyOutputs []TxOutput
-	ScriptOutputs []ScriptOutput
-	Minting       []Minting
-	Burning       []Burning
-	ChangeAddress string
-	Fee           int64
-	Collaterals   []TxInput
-	ValidRange    *ValidRange
+	PubKeyInputs   []TxInput
+	ScriptInputs   []ScriptInput
+	PubKeyOutputs  []TxOutput
+	ScriptOutputs  []ScriptOutput
+	Minting        []Minting
+	Burning        []Burning
+	ChangeAddress  string
+	Fee            int64
+	Collaterals    []TxInput
+	ValidRangeFrom *int64
+	ValidRangeTo   *int64
 }
 
 type Option = func(b *TxBuilder)
@@ -224,11 +220,14 @@ func PayFee(x int64) Option {
 	}
 }
 
-func SetValidRange(from int64, to int64) Option {
+func SetValidRangeFrom(from int64) Option {
 	return func(b *TxBuilder) {
-		b.ValidRange = &ValidRange{
-			From: from,
-			To:   to,
-		}
+		b.ValidRangeFrom = &from
+	}
+}
+
+func SetValidRangeTo(to int64) Option {
+	return func(b *TxBuilder) {
+		b.ValidRangeTo = &to
 	}
 }
