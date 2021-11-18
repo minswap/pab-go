@@ -2,7 +2,6 @@ package cli
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -287,62 +286,4 @@ func (c *CardanoCLI) GetDatumHash(datum string) (string, error) {
 		return "", fmt.Errorf("fail to hash datum: %w", err)
 	}
 	return strings.TrimSpace(string(out)), nil
-}
-
-func (c *CardanoCLI) SubmitTx(tx *Tx, witnesses string) error {
-	if witnesses == "" {
-		return errors.New("error when submit tx: empty witness")
-	}
-
-	tempManager, err := NewTempManager()
-	if err != nil {
-		return fmt.Errorf("fail to create TempManager: %w", err)
-	}
-	defer func() {
-		tempManager.Clean()
-	}()
-
-	// Write tx body file
-	txBody := tempManager.NewFile("tx-body")
-	content, err := json.Marshal(CBORFile{
-		Type:        "TxBodyAlonzo",
-		Description: "",
-		CBORHex:     tx.TxBody,
-	})
-	if err != nil {
-		return fmt.Errorf("fail to encode tx file: %w", err)
-	}
-	if _, err := txBody.Write(content); err != nil {
-		return fmt.Errorf("fail to write tx file: %w", err)
-	}
-
-	// Write witness file
-	witness := tempManager.NewFile("tx-witness")
-	content, err = json.Marshal(CBORFile{
-		Type:        "TxWitness AlonzoEra",
-		Description: "",
-		CBORHex:     witnesses,
-	})
-	if err != nil {
-		return fmt.Errorf("fail to encode witness file: %w", err)
-	}
-	if _, err := witness.Write(content); err != nil {
-		return fmt.Errorf("fail to write witness file: %w", err)
-	}
-
-	// Create signed tx file
-	signedTx := tempManager.NewFile("signed-tx")
-	if _, err := c.Run("transaction", "assemble",
-		"--tx-body-file", txBody.Name(),
-		"--witness-file", witness.Name(),
-		"--out-file", signedTx.Name(),
-	); err != nil {
-		return fmt.Errorf("fail to assemble tx body and witness: %w", err)
-	}
-
-	// Submit tx
-	if _, err := c.RunWithNetwork("transaction", "submit", "--tx-file", signedTx.Name()); err != nil {
-		return fmt.Errorf("fail to submit tx: %w", err)
-	}
-	return nil
 }
