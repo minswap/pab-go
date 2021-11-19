@@ -58,6 +58,7 @@ type TxBuilder struct {
 	Collaterals    []TxInput
 	ValidRangeFrom *int64
 	ValidRangeTo   *int64
+	SignerSkeyPath string
 }
 
 type Option = func(b *TxBuilder)
@@ -229,5 +230,11 @@ func SetValidRangeFrom(from int64) Option {
 func SetValidRangeTo(to int64) Option {
 	return func(b *TxBuilder) {
 		b.ValidRangeTo = &to
+	}
+}
+
+func SetSignerSKey(signerSKeyPath string) Option {
+	return func(b *TxBuilder) {
+		b.SignerSkeyPath = signerSKeyPath
 	}
 }
