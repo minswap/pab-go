@@ -124,6 +124,11 @@ func (cli *CardanoCLI) buildTx(b txbuilder.TxBuilder, temp *TempManager) []strin
 			"--invalid-hereafter", fmt.Sprintf("%d", *b.ValidRangeTo),
 		)
 	}
+	if b.SignerSkeyPath != "" {
+		args = append(args,
+			"--required-signer", b.SignerSkeyPath,
+		)
+	}
 
 	args = append(args, "--protocol-params-file", cli.ProtocolParamsPath)
 	return args
