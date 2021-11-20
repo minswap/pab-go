@@ -124,9 +124,9 @@ func (cli *CardanoCLI) buildTx(b txbuilder.TxBuilder, temp *TempManager) []strin
 			"--invalid-hereafter", fmt.Sprintf("%d", *b.ValidRangeTo),
 		)
 	}
-	if b.SignerSkeyPath != "" {
+	for _, skey := range b.SignerSkeyPaths {
 		args = append(args,
-			"--required-signer", b.SignerSkeyPath,
+			"--required-signer", skey,
 		)
 	}
 
