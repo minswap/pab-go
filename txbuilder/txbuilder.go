@@ -235,6 +235,6 @@ func SetValidRangeTo(to int64) Option {
 
 func SignedWith(sKeyPaths ...string) Option {
 	return func(b *TxBuilder) {
-		b.SignerSkeyPaths = sKeyPaths
+		b.SignerSkeyPaths = append(b.SignerSkeyPaths, sKeyPaths...)
 	}
 }
