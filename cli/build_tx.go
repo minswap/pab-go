@@ -85,6 +85,11 @@ func (cli *CardanoCLI) buildTx(b txbuilder.TxBuilder, temp *TempManager) []strin
 			"--tx-out", buildOutput(out.TxOutput),
 			"--tx-out-datum-hash", out.DatumHash,
 		)
+		if out.DatumValue != nil {
+			args = append(args,
+				"--tx-out-datum-embed-file", cli.buildTempFile("output-datum-embed", *out.DatumValue, temp),
+			)
+		}
 	}
 
 	// build minting and burning
