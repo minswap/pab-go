@@ -27,7 +27,8 @@ type TxOutput struct {
 
 type ScriptOutput struct {
 	TxOutput
-	DatumHash string
+	DatumHash  string
+	DatumValue *string
 }
 
 type Minting struct {
@@ -186,14 +187,15 @@ func PayToPubKey(addr string, val ledger.Value) Option {
 	}
 }
 
-func PayToScript(addr string, val ledger.Value, datumHash string) Option {
+func PayToScript(addr string, val ledger.Value, datumHash string, datum *string) Option {
 	return func(b *TxBuilder) {
 		b.ScriptOutputs = append(b.ScriptOutputs, ScriptOutput{
 			TxOutput: TxOutput{
 				Address: addr,
 				Value:   val,
 			},
-			DatumHash: datumHash,
+			DatumHash:  datumHash,
+			DatumValue: datum,
 		})
 	}
 }
