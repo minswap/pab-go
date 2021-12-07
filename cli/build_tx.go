@@ -83,11 +83,14 @@ func (cli *CardanoCLI) buildTx(b txbuilder.TxBuilder, temp *TempManager) []strin
 	for _, out := range b.ScriptOutputs {
 		args = append(args,
 			"--tx-out", buildOutput(out.TxOutput),
-			"--tx-out-datum-hash", out.DatumHash,
 		)
 		if out.DatumValue != nil {
 			args = append(args,
 				"--tx-out-datum-embed-file", cli.buildTempFile("output-datum-embed", *out.DatumValue, temp),
+			)
+		} else {
+			args = append(args,
+				"--tx-out-datum-hash", out.DatumHash,
 			)
 		}
 	}
