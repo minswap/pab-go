@@ -25,10 +25,25 @@ type TxOutput struct {
 	Value   ledger.Value
 }
 
+type ScriptOutputDatum interface {
+	isScriptOutputDatum()
+}
+
+type ScriptOutputDatumHash struct {
+	DatumHash string
+}
+
+func (ScriptOutputDatumHash) isScriptOutputDatum() {}
+
+type ScriptOutputDatumValue struct {
+	DatumValue string
+}
+
+func (ScriptOutputDatumValue) isScriptOutputDatum() {}
+
 type ScriptOutput struct {
 	TxOutput
-	DatumHash  string
-	DatumValue *string
+	Datum ScriptOutputDatum
 }
 
 type Minting struct {
@@ -112,7 +127,7 @@ func SpendScriptUtxo(u ledger.Utxo, scriptFilePath, datum, redeemer string) Opti
 					Address: u.Address,
 					Value:   u.Value,
 				},
-				DatumHash: *u.DatumHash,
+				Datum: ScriptOutputDatumHash{*u.DatumHash},
 			},
 		})
 	}
@@ -187,15 +202,14 @@ func PayToPubKey(addr string, val ledger.Value) Option {
 	}
 }
 
-func PayToScript(addr string, val ledger.Value, datumHash string, datum *string) Option {
+func PayToScript(addr string, val ledger.Value, datum ScriptOutputDatum) Option {
 	return func(b *TxBuilder) {
 		b.ScriptOutputs = append(b.ScriptOutputs, ScriptOutput{
 			TxOutput: TxOutput{
 				Address: addr,
 				Value:   val,
 			},
-			DatumHash:  datumHash,
-			DatumValue: datum,
+			Datum: datum,
 		})
 	}
 }

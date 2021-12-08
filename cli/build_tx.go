@@ -84,14 +84,17 @@ func (cli *CardanoCLI) buildTx(b txbuilder.TxBuilder, temp *TempManager) []strin
 		args = append(args,
 			"--tx-out", buildOutput(out.TxOutput),
 		)
-		if out.DatumValue != nil {
+		switch datum := out.Datum.(type) {
+		case txbuilder.ScriptOutputDatumHash:
 			args = append(args,
-				"--tx-out-datum-embed-file", cli.buildTempFile("output-datum-embed", *out.DatumValue, temp),
+				"--tx-out-datum-hash", datum.DatumHash,
 			)
-		} else {
+		case txbuilder.ScriptOutputDatumValue:
 			args = append(args,
-				"--tx-out-datum-hash", out.DatumHash,
+				"--tx-out-datum-embed-file", cli.buildTempFile("output-datum-embed", datum.DatumValue, temp),
 			)
+		default:
+			panic(fmt.Sprintf("Unsupported datum type: %T", datum))
 		}
 	}
 
