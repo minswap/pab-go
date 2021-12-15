@@ -15,7 +15,7 @@ func NewTempManager() (*TempManager, error) {
 	tm := new(TempManager)
 
 	// test if we can create temp file and write to it
-	testFile, err := ioutil.TempFile("", "testnet-api-test-")
+	testFile, err := ioutil.TempFile("", "pab-go-test-")
 	if err != nil {
 		return nil, fmt.Errorf("tempmanager: fail to create temp file: %w", err)
 	}
@@ -31,7 +31,7 @@ func NewTempManager() (*TempManager, error) {
 }
 
 func (tm *TempManager) NewFile(suffix string) *os.File {
-	file, err := ioutil.TempFile("", fmt.Sprintf("testnet-api-%s-", suffix))
+	file, err := ioutil.TempFile("", fmt.Sprintf("pab-go-%s-", suffix))
 	if err != nil {
 		// We know it will likely succeed because we test ioutil.TempFile when initialize TempManager, but we still log for auditing exceptions.
 		log.Printf("tempmanager: fail to create temp file: %v\n", err)
