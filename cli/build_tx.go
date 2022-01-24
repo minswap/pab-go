@@ -6,6 +6,7 @@ import (
 	"math/big"
 	"strconv"
 	"strings"
+	"unicode"
 
 	"github.com/minswap/pab-go/ledger"
 	"github.com/minswap/pab-go/txbuilder"
@@ -43,7 +44,14 @@ func (cli *CardanoCLI) buildTempFile(suffix string, content string, temp *TempMa
 	file := temp.NewFile(suffix)
 	file.WriteString(content)
 	if cli.Debug {
-		log.Printf("%s has content: %s\n", file.Name(), content)
+		// remove all whitespaces
+		compactContent := strings.Map(func(r rune) rune {
+			if !unicode.IsSpace(r) {
+				return r
+			}
+			return -1
+		}, content)
+		log.Printf("%s has content: %s\n", file.Name(), compactContent)
 	}
 	return file.Name()
 }
