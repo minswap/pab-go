@@ -18,22 +18,30 @@ type Options struct {
 	CLIPath            string
 	NetworkID          NetworkID
 	ProtocolParamsPath string
-	Debug              bool
+	LogCommand         bool
+	LogTempFile        bool
+	// If you want to log a few commands, set them here. Empty mean log all commands (if LogCommand is true).
+	// Example: []string{"transaction build", "transaction submit"}
+	WhitelistCommandLogs []string
 }
 
 type CardanoCLI struct {
-	CLIPath            string
-	NetworkID          NetworkID
-	ProtocolParamsPath string
-	Debug              bool
+	CLIPath              string
+	NetworkID            NetworkID
+	ProtocolParamsPath   string
+	LogCommand           bool
+	LogTempFile          bool
+	WhitelistCommandLogs []string
 }
 
 func New(options Options) (*CardanoCLI, error) {
 	cli := &CardanoCLI{
-		CLIPath:            options.CLIPath,
-		NetworkID:          options.NetworkID,
-		ProtocolParamsPath: options.ProtocolParamsPath,
-		Debug:              options.Debug,
+		CLIPath:              options.CLIPath,
+		NetworkID:            options.NetworkID,
+		ProtocolParamsPath:   options.ProtocolParamsPath,
+		LogCommand:           options.LogCommand,
+		LogTempFile:          options.LogTempFile,
+		WhitelistCommandLogs: options.WhitelistCommandLogs,
 	}
 	if cli.CLIPath == "" {
 		cli.CLIPath = "cardano-cli"
@@ -51,11 +59,28 @@ func New(options Options) (*CardanoCLI, error) {
 	return cli, nil
 }
 
-func (c *CardanoCLI) Run(args ...string) ([]byte, error) {
-	if c.Debug {
-		log.Printf("run:\n\ncardano-cli %s\n", FormatCLIArgs(args...))
+func (c *CardanoCLI) logCommand(args []string) {
+	if !c.LogCommand {
+		return
 	}
+	if len(c.WhitelistCommandLogs) > 0 {
+		fullCmd := strings.Join(args, " ")
+		willLog := false
+		for _, cmd := range c.WhitelistCommandLogs {
+			if strings.HasPrefix(fullCmd, cmd) {
+				willLog = true
+				break
+			}
+		}
+		if !willLog {
+			return
+		}
+	}
+	log.Printf("run:\n\ncardano-cli %s\n", FormatCLIArgs(args...))
+}
 
+func (c *CardanoCLI) Run(args ...string) ([]byte, error) {
+	c.logCommand(args)
 	out, err := exec.Command(c.CLIPath, args...).CombinedOutput()
 	if err != nil {
 		return nil, NewCLIError(fmt.Sprintf("%v: %s", err, out), args)
