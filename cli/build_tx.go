@@ -43,7 +43,7 @@ func buildOutput(o txbuilder.TxOutput) string {
 func (cli *CardanoCLI) buildTempFile(suffix string, content string, temp *TempManager) string {
 	file := temp.NewFile(suffix)
 	file.WriteString(content)
-	if cli.Debug {
+	if cli.LogTempFile {
 		// remove all whitespaces
 		compactContent := strings.Map(func(r rune) rune {
 			if !unicode.IsSpace(r) {
