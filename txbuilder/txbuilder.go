@@ -54,6 +54,11 @@ type Minting struct {
 	ExCPU          int64
 }
 
+type MintingNativeScript struct {
+	Value          ledger.Value
+	ScriptFilePath string
+}
+
 type Burning struct {
 	Value          ledger.Value
 	ScriptFilePath string
@@ -62,19 +67,26 @@ type Burning struct {
 	ExCPU          int64
 }
 
+type BurningNativeScript struct {
+	Value          ledger.Value
+	ScriptFilePath string
+}
+
 type TxBuilder struct {
-	PubKeyInputs    []TxInput
-	ScriptInputs    []ScriptInput
-	PubKeyOutputs   []TxOutput
-	ScriptOutputs   []ScriptOutput
-	Minting         []Minting
-	Burning         []Burning
-	ChangeAddress   string
-	Fee             int64
-	Collaterals     []TxInput
-	ValidRangeFrom  *int64
-	ValidRangeTo    *int64
-	SignerSkeyPaths []string
+	PubKeyInputs        []TxInput
+	ScriptInputs        []ScriptInput
+	PubKeyOutputs       []TxOutput
+	ScriptOutputs       []ScriptOutput
+	Minting             []Minting
+	MintingNativeScript []MintingNativeScript
+	Burning             []Burning
+	BurningNativeScript []BurningNativeScript
+	ChangeAddress       string
+	Fee                 int64
+	Collaterals         []TxInput
+	ValidRangeFrom      *int64
+	ValidRangeTo        *int64
+	SignerSkeyPaths     []string
 }
 
 type Option = func(b *TxBuilder)
@@ -171,6 +183,15 @@ func MintAssetsRaw(val ledger.Value, scriptFilePath, redeemer string, exMem, exC
 	}
 }
 
+func MintNativeScriptAssets(val ledger.Value, scriptFilePath string) Option {
+	return func(b *TxBuilder) {
+		b.MintingNativeScript = append(b.MintingNativeScript, MintingNativeScript{
+			Value:          val,
+			ScriptFilePath: scriptFilePath,
+		})
+	}
+}
+
 func BurnAssets(val ledger.Value, scriptFilePath, redeemer string) Option {
 	return func(b *TxBuilder) {
 		b.Burning = append(b.Burning, Burning{
@@ -189,6 +210,15 @@ func BurnAssetsRaw(val ledger.Value, scriptFilePath, redeemer string, exMem, exC
 			RedeemerValue:  redeemer,
 			ExMem:          exMem,
 			ExCPU:          exCPU,
+		})
+	}
+}
+
+func BurnNativeScriptAssets(val ledger.Value, scriptFilePath string) Option {
+	return func(b *TxBuilder) {
+		b.BurningNativeScript = append(b.BurningNativeScript, BurningNativeScript{
+			Value:          val,
+			ScriptFilePath: scriptFilePath,
 		})
 	}
 }

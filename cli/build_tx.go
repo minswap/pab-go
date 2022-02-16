@@ -118,6 +118,12 @@ func (cli *CardanoCLI) buildTx(b txbuilder.TxBuilder, temp *TempManager) []strin
 			args = append(args, "--mint-execution-units", buildExUnits(mint.ExCPU, mint.ExMem))
 		}
 	}
+	for _, mintNativeScript := range b.MintingNativeScript {
+		forgeVal.AddAll(mintNativeScript.Value)
+		args = append(args,
+			"--mint-script-file", mintNativeScript.ScriptFilePath,
+		)
+	}
 	for _, burn := range b.Burning {
 		for asset, amount := range burn.Value {
 			forgeVal.Add(asset, new(big.Int).Neg(amount))
@@ -130,6 +136,15 @@ func (cli *CardanoCLI) buildTx(b txbuilder.TxBuilder, temp *TempManager) []strin
 			args = append(args, "--mint-execution-units", buildExUnits(burn.ExCPU, burn.ExMem))
 		}
 	}
+	for _, burnNativeScript := range b.BurningNativeScript {
+		for asset, amount := range burnNativeScript.Value {
+			forgeVal.Add(asset, new(big.Int).Neg(amount))
+		}
+		args = append(args,
+			"--mint-script-file", burnNativeScript.ScriptFilePath,
+		)
+	}
+
 	if len(forgeVal) > 0 {
 		args = append(args, "--mint", buildValue(forgeVal))
 	}
