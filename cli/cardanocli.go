@@ -235,7 +235,7 @@ func (c *CardanoCLI) BuildTx(txb txbuilder.TxBuilder) (tx *Tx, err error) {
 	}, err
 }
 
-func (c *CardanoCLI) SubmitTxWithSkey(tx *Tx, skeyFilePath string) error {
+func (c *CardanoCLI) SubmitTxWithSkey(tx *Tx, skeyFilePaths ...string) error {
 	// Create temp file for raw tx and signed tx
 	tempManager, err := NewTempManager()
 	if err != nil {
@@ -261,11 +261,18 @@ func (c *CardanoCLI) SubmitTxWithSkey(tx *Tx, skeyFilePath string) error {
 
 	// Sign tx
 	signedTx := tempManager.NewFile("sign-tx")
-	if _, err := c.RunWithNetwork("transaction", "sign",
+	var args []string
+	args = append(args,
+		"transaction", "sign",
 		"--tx-body-file", txBody.Name(),
-		"--signing-key-file", skeyFilePath,
-		"--out-file", signedTx.Name(),
-	); err != nil {
+	)
+	for _, skeyFilePath := range skeyFilePaths {
+		args = append(args,
+			"--signing-key-file", skeyFilePath,
+		)
+	}
+	args = append(args, "--out-file", signedTx.Name())
+	if _, err := c.RunWithNetwork(args...); err != nil {
 		return fmt.Errorf("fail to sign tx: %w", err)
 	}
 
