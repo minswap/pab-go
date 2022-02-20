@@ -158,6 +158,13 @@ func (cli *CardanoCLI) buildTx(b txbuilder.TxBuilder, temp *TempManager) []strin
 			"--invalid-hereafter", fmt.Sprintf("%d", *b.ValidRangeTo),
 		)
 	}
+
+	if b.JsonMetadataPath != "" {
+		args = append(args,
+			"--metadata-json-file", cli.buildTempFile("metadata-json", b.JsonMetadataPath, temp),
+		)
+	}
+
 	for _, skey := range b.SignerSkeyPaths {
 		args = append(args,
 			"--required-signer", skey,
