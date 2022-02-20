@@ -159,9 +159,9 @@ func (cli *CardanoCLI) buildTx(b txbuilder.TxBuilder, temp *TempManager) []strin
 		)
 	}
 
-	if b.JsonMetadata != "" {
+	if b.JSONMetadata != "" {
 		args = append(args,
-			"--metadata-json-file", cli.buildTempFile("metadata-json", b.JsonMetadata, temp),
+			"--metadata-json-file", cli.buildTempFile("metadata-json", b.JSONMetadata, temp),
 		)
 	}
 

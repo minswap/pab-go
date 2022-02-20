@@ -86,7 +86,7 @@ type TxBuilder struct {
 	Collaterals         []TxInput
 	ValidRangeFrom      *int64
 	ValidRangeTo        *int64
-	JsonMetadata        string
+	JSONMetadata        string
 	SignerSkeyPaths     []string
 }
 
@@ -280,9 +280,9 @@ func SetValidRangeTo(to int64) Option {
 	}
 }
 
-func SetJsonMetadata(json string) Option {
+func SetJSONMetadata(json string) Option {
 	return func(b *TxBuilder) {
-		b.JsonMetadata = json
+		b.JSONMetadata = json
 	}
 }
 
