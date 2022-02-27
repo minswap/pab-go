@@ -300,6 +300,19 @@ func (c *CardanoCLI) GetScriptAddress(scriptPath string) (string, error) {
 	return strings.TrimSpace(string(out)), nil
 }
 
+func (c *CardanoCLI) GetStakingScriptAddress(scriptPath string, stakeVkeyPath string) (string, error) {
+	out, err := c.RunWithNetwork(
+		"address",
+		"build",
+		"--payment-script-file", scriptPath,
+		"--stake-verification-key-file", stakeVkeyPath,
+	)
+	if err != nil {
+		return "", fmt.Errorf("fail to get staking script address: %w", err)
+	}
+	return strings.TrimSpace(string(out)), nil
+}
+
 func (c *CardanoCLI) GetDatumHash(datum string) (string, error) {
 	tempManager, err := NewTempManager()
 	if err != nil {
