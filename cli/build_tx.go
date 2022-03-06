@@ -10,7 +10,6 @@ import (
 
 	"github.com/minswap/pab-go/ledger"
 	"github.com/minswap/pab-go/txbuilder"
-	"github.com/minswap/pab-go/util/stringutil"
 )
 
 // Example: 5ca53b0eb10f317a5f1bf1bda679a04a8dd01c156643deee1d406ec2cc15e9e3#0
@@ -119,11 +118,11 @@ func (cli *CardanoCLI) buildTx(b txbuilder.TxBuilder, temp *TempManager) []strin
 			args = append(args, "--mint-execution-units", buildExUnits(mint.ExCPU, mint.ExMem))
 		}
 	}
-	mintScriptFilePaths := make([]string, 0)
+	mintScriptFilePaths := make(map[string]struct{}, 0)
 	for _, mintNativeScript := range b.MintingNativeScript {
 		forgeVal.AddAll(mintNativeScript.Value)
-		if !stringutil.Contains(mintScriptFilePaths, mintNativeScript.ScriptFilePath) {
-			mintScriptFilePaths = append(mintScriptFilePaths, mintNativeScript.ScriptFilePath)
+		if _, ok := mintScriptFilePaths[mintNativeScript.ScriptFilePath]; !ok {
+			mintScriptFilePaths[mintNativeScript.ScriptFilePath] = struct{}{}
 		}
 	}
 	for _, burn := range b.Burning {
@@ -142,12 +141,12 @@ func (cli *CardanoCLI) buildTx(b txbuilder.TxBuilder, temp *TempManager) []strin
 		for asset, amount := range burnNativeScript.Value {
 			forgeVal.Add(asset, new(big.Int).Neg(amount))
 		}
-		if !stringutil.Contains(mintScriptFilePaths, burnNativeScript.ScriptFilePath) {
-			mintScriptFilePaths = append(mintScriptFilePaths, burnNativeScript.ScriptFilePath)
+		if _, ok := mintScriptFilePaths[burnNativeScript.ScriptFilePath]; !ok {
+			mintScriptFilePaths[burnNativeScript.ScriptFilePath] = struct{}{}
 		}
 	}
 
-	for _, mintScriptFilePath := range mintScriptFilePaths {
+	for mintScriptFilePath := range mintScriptFilePaths {
 		args = append(args,
 			"--mint-script-file", mintScriptFilePath,
 		)
