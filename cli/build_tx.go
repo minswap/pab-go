@@ -118,11 +118,12 @@ func (cli *CardanoCLI) buildTx(b txbuilder.TxBuilder, temp *TempManager) []strin
 			args = append(args, "--mint-execution-units", buildExUnits(mint.ExCPU, mint.ExMem))
 		}
 	}
+	mintScriptFilePaths := make(map[string]struct{}, 0)
 	for _, mintNativeScript := range b.MintingNativeScript {
 		forgeVal.AddAll(mintNativeScript.Value)
-		args = append(args,
-			"--mint-script-file", mintNativeScript.ScriptFilePath,
-		)
+		if _, ok := mintScriptFilePaths[mintNativeScript.ScriptFilePath]; !ok {
+			mintScriptFilePaths[mintNativeScript.ScriptFilePath] = struct{}{}
+		}
 	}
 	for _, burn := range b.Burning {
 		for asset, amount := range burn.Value {
@@ -140,8 +141,14 @@ func (cli *CardanoCLI) buildTx(b txbuilder.TxBuilder, temp *TempManager) []strin
 		for asset, amount := range burnNativeScript.Value {
 			forgeVal.Add(asset, new(big.Int).Neg(amount))
 		}
+		if _, ok := mintScriptFilePaths[burnNativeScript.ScriptFilePath]; !ok {
+			mintScriptFilePaths[burnNativeScript.ScriptFilePath] = struct{}{}
+		}
+	}
+
+	for mintScriptFilePath := range mintScriptFilePaths {
 		args = append(args,
-			"--mint-script-file", burnNativeScript.ScriptFilePath,
+			"--mint-script-file", mintScriptFilePath,
 		)
 	}
 
@@ -158,6 +165,13 @@ func (cli *CardanoCLI) buildTx(b txbuilder.TxBuilder, temp *TempManager) []strin
 			"--invalid-hereafter", fmt.Sprintf("%d", *b.ValidRangeTo),
 		)
 	}
+
+	if b.JSONMetadata != "" {
+		args = append(args,
+			"--metadata-json-file", cli.buildTempFile("metadata-json", b.JSONMetadata, temp),
+		)
+	}
+
 	for _, skey := range b.SignerSkeyPaths {
 		args = append(args,
 			"--required-signer", skey,
