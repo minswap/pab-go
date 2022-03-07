@@ -30,6 +30,16 @@ func FindCollateral(utxos []Utxo) (Utxo, error) {
 	return ret, nil
 }
 
+// FindCollaterals find the all potentials only-ADA UTxO
+func FindCollaterals(utxos []Utxo) (collaterals []Utxo) {
+	for _, u := range utxos {
+		if len(u.Value) == 1 && u.Value.Contains(ADA) {
+			collaterals = append(collaterals, u)
+		}
+	}
+	return collaterals
+}
+
 func SumValueOfUtxos(utxos []Utxo) Value {
 	val := NewValue()
 	for _, u := range utxos {
