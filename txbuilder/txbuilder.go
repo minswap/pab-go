@@ -287,7 +287,8 @@ func SetJSONMetadata(json string) Option {
 	}
 }
 
-func RequireSignWithSkey(sKeyPaths ...string) Option {
+// TODO: Rename to RequireSignWithSkey in next breaking change
+func SignedWith(sKeyPaths ...string) Option {
 	return func(b *TxBuilder) {
 		b.RequiredSignerSkeyPaths = append(b.RequiredSignerSkeyPaths, sKeyPaths...)
 	}
