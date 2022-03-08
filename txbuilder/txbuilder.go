@@ -258,6 +258,10 @@ func UseCollaterals(utxos ...ledger.Utxo) Option {
 			b.Collaterals = append(b.Collaterals, TxInput{
 				TxID:    u.TxID,
 				TxIndex: u.TxIndex,
+				TxOut: TxOutput{
+					Address: u.Address,
+					Value:   u.Value,
+				},
 			})
 		}
 	}
