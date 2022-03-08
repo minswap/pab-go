@@ -172,7 +172,7 @@ func (cli *CardanoCLI) buildTx(b txbuilder.TxBuilder, temp *TempManager) []strin
 		)
 	}
 
-	for _, skey := range b.RequiredSignerSkeyPaths {
+	for _, skey := range b.SignerSkeyPaths {
 		args = append(args,
 			"--required-signer", skey,
 		)

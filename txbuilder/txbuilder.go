@@ -87,7 +87,7 @@ type TxBuilder struct {
 	ValidRangeFrom           *int64
 	ValidRangeTo             *int64
 	JSONMetadata             string
-	RequiredSignerSkeyPaths  []string
+	SignerSkeyPaths          []string // TODO: Rename to RequiredSignerSkeyPaths in next breaking change
 	RequiredSignerVkeyHashes []string
 }
 
@@ -290,7 +290,7 @@ func SetJSONMetadata(json string) Option {
 // TODO: Rename to RequireSignWithSkey in next breaking change
 func SignedWith(sKeyPaths ...string) Option {
 	return func(b *TxBuilder) {
-		b.RequiredSignerSkeyPaths = append(b.RequiredSignerSkeyPaths, sKeyPaths...)
+		b.SignerSkeyPaths = append(b.SignerSkeyPaths, sKeyPaths...)
 	}
 }
 
