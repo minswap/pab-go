@@ -73,21 +73,22 @@ type BurningNativeScript struct {
 }
 
 type TxBuilder struct {
-	PubKeyInputs        []TxInput
-	ScriptInputs        []ScriptInput
-	PubKeyOutputs       []TxOutput
-	ScriptOutputs       []ScriptOutput
-	Minting             []Minting
-	MintingNativeScript []MintingNativeScript
-	Burning             []Burning
-	BurningNativeScript []BurningNativeScript
-	ChangeAddress       string
-	Fee                 int64
-	Collaterals         []TxInput
-	ValidRangeFrom      *int64
-	ValidRangeTo        *int64
-	JSONMetadata        string
-	SignerSkeyPaths     []string
+	PubKeyInputs             []TxInput
+	ScriptInputs             []ScriptInput
+	PubKeyOutputs            []TxOutput
+	ScriptOutputs            []ScriptOutput
+	Minting                  []Minting
+	MintingNativeScript      []MintingNativeScript
+	Burning                  []Burning
+	BurningNativeScript      []BurningNativeScript
+	ChangeAddress            string
+	Fee                      int64
+	Collaterals              []TxInput
+	ValidRangeFrom           *int64
+	ValidRangeTo             *int64
+	JSONMetadata             string
+	SignerSkeyPaths          []string // TODO: Rename to RequiredSignerSkeyPaths in next breaking change
+	RequiredSignerVkeyHashes []string
 }
 
 type Option = func(b *TxBuilder)
@@ -290,8 +291,15 @@ func SetJSONMetadata(json string) Option {
 	}
 }
 
+// TODO: Rename to RequireSignWithSkey in next breaking change
 func SignedWith(sKeyPaths ...string) Option {
 	return func(b *TxBuilder) {
 		b.SignerSkeyPaths = append(b.SignerSkeyPaths, sKeyPaths...)
+	}
+}
+
+func RequireSignWithVkeyHash(vkeyHashes ...string) Option {
+	return func(b *TxBuilder) {
+		b.RequiredSignerVkeyHashes = append(b.RequiredSignerVkeyHashes, vkeyHashes...)
 	}
 }

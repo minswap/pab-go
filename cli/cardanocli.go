@@ -125,9 +125,7 @@ func (c *CardanoCLI) GetAllUtxos() ([]ledger.Utxo, error) {
 	if err != nil {
 		return nil, fmt.Errorf("fail to create TempManager: %w", err)
 	}
-	defer func() {
-		tempManager.Clean()
-	}()
+	defer tempManager.Clean()
 
 	out := tempManager.NewFile("query-utxo")
 	_, err = c.RunWithNetwork("query", "utxo", "--whole-utxo", "--out-file", out.Name())
@@ -147,9 +145,7 @@ func (c *CardanoCLI) GetUtxosByAddresses(addresses ...string) ([]ledger.Utxo, er
 	if err != nil {
 		return nil, fmt.Errorf("fail to create TempManager: %w", err)
 	}
-	defer func() {
-		tempManager.Clean()
-	}()
+	defer tempManager.Clean()
 
 	out := tempManager.NewFile("query-utxo")
 	args := []string{"query", "utxo", "--out-file", out.Name()}
@@ -171,9 +167,7 @@ func (c *CardanoCLI) GetUtxosByTxIns(txIns ...TxIn) ([]ledger.Utxo, error) {
 	if err != nil {
 		return nil, fmt.Errorf("fail to create TempManager: %w", err)
 	}
-	defer func() {
-		tempManager.Clean()
-	}()
+	defer tempManager.Clean()
 
 	out := tempManager.NewFile("query-utxo")
 	args := []string{"query", "utxo", "--out-file", out.Name()}
@@ -195,9 +189,7 @@ func (c *CardanoCLI) BuildTx(txb txbuilder.TxBuilder) (tx *Tx, err error) {
 	if err != nil {
 		return nil, fmt.Errorf("fail to create TempManager: %w", err)
 	}
-	defer func() {
-		tempManager.Clean()
-	}()
+	defer tempManager.Clean()
 
 	// Build tx
 	rawTx := tempManager.NewFile("raw-tx")
@@ -235,15 +227,74 @@ func (c *CardanoCLI) BuildTx(txb txbuilder.TxBuilder) (tx *Tx, err error) {
 	}, err
 }
 
+func (c *CardanoCLI) BuildAndSignTx(txb txbuilder.TxBuilder, skeyFilePaths ...string) (tx *Tx, err error) {
+	tempManager, err := NewTempManager()
+	if err != nil {
+		return nil, fmt.Errorf("fail to create TempManager: %w", err)
+	}
+	defer tempManager.Clean()
+
+	// Build tx
+	rawTx := tempManager.NewFile("raw-tx")
+	args := c.buildTx(txb, tempManager)
+	args = append(args, "--out-file", rawTx.Name())
+	if txb.IsRaw() {
+		_, err = c.Run(args...)
+		if err != nil {
+			return nil, fmt.Errorf("fail to use cardano-cli to build tx: %w", err)
+		}
+	} else {
+		_, err = c.RunWithNetwork(args...)
+		if err != nil {
+			return nil, fmt.Errorf("fail to use cardano-cli to build tx: %w", err)
+		}
+	}
+
+	// Sign tx
+	signedTx := tempManager.NewFile("sign-tx")
+	args = []string{
+		"transaction", "sign",
+		"--tx-body-file", rawTx.Name(),
+	}
+	for _, skeyFilePath := range skeyFilePaths {
+		args = append(args,
+			"--signing-key-file", skeyFilePath,
+		)
+	}
+	args = append(args, "--out-file", signedTx.Name())
+	if _, err := c.RunWithNetwork(args...); err != nil {
+		return nil, fmt.Errorf("fail to sign tx: %w", err)
+	}
+
+	// Read signed tx
+	cborFileBytes, err := io.ReadAll(signedTx)
+	if err != nil {
+		return nil, fmt.Errorf("fail to read signed tx file: %w", err)
+	}
+	cborFile := new(CBORFile)
+	if err := json.Unmarshal(cborFileBytes, &cborFile); err != nil {
+		return nil, fmt.Errorf("fail to decode cbor file: %w", err)
+	}
+
+	// get txHash
+	txHashHex, err := c.Run("transaction", "txid", "--tx-file", signedTx.Name())
+	if err != nil {
+		return nil, fmt.Errorf("fail to get tx hash: %w", err)
+	}
+
+	return &Tx{
+		TxHash: strings.TrimSpace(string(txHashHex)),
+		TxBody: cborFile.CBORHex,
+	}, err
+}
+
 func (c *CardanoCLI) SubmitTxWithSkey(tx *Tx, skeyFilePaths ...string) error {
 	// Create temp file for raw tx and signed tx
 	tempManager, err := NewTempManager()
 	if err != nil {
 		return fmt.Errorf("fail to create TempManager: %w", err)
 	}
-	defer func() {
-		tempManager.Clean()
-	}()
+	defer tempManager.Clean()
 
 	// Write tx body file
 	txBody := tempManager.NewFile("tx-body")
@@ -318,9 +369,7 @@ func (c *CardanoCLI) GetDatumHash(datum string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("fail to create TempManager: %w", err)
 	}
-	defer func() {
-		tempManager.Clean()
-	}()
+	defer tempManager.Clean()
 
 	datumFile := tempManager.NewFile("datum-value")
 	if _, err := datumFile.WriteString(datum); err != nil {
