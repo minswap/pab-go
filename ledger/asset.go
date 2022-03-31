@@ -2,6 +2,7 @@ package ledger
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 )
 
@@ -16,21 +17,30 @@ func NewAsset(currencySymbol, tokenName string) Asset {
 	return Asset{currencySymbol, tokenName}
 }
 
-func AssetFromString(s string) (Asset, error) {
-	parts := strings.Split(s, ".")
-	if len(parts) != 2 {
-		return Asset{}, errors.New("ledger.AssetFromString: asset format must be $currencySymbol.$tokenName")
+func FromString(s string) (Asset, error) {
+	if s == "lovelace" {
+		return ADA, nil
 	}
-	return NewAsset(parts[0], parts[1]), nil
+	as := strings.Split(s, ".")
+	if len(as) != 2 {
+		return Asset{}, errors.New("cannot parse asset from string")
+	}
+	return Asset{
+		CurrencySymbol: as[0],
+		TokenName:      as[1],
+	}, nil
 }
 
+func (as Asset) String() string {
+	if as == ADA {
+		return "lovelace"
+	} else {
+		return fmt.Sprintf(`%s.%s`, as.CurrencySymbol, as.TokenName)
+	}
+}
 func (a Asset) Cmp(b Asset) int {
 	if a.CurrencySymbol == b.CurrencySymbol {
 		return strings.Compare(a.TokenName, b.TokenName)
 	}
 	return strings.Compare(a.CurrencySymbol, b.CurrencySymbol)
-}
-
-func (a Asset) String() string {
-	return a.CurrencySymbol + "." + a.TokenName
 }
