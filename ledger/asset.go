@@ -17,7 +17,7 @@ func NewAsset(currencySymbol, tokenName string) Asset {
 	return Asset{currencySymbol, tokenName}
 }
 
-func FromString(s string) (Asset, error) {
+func AssetFromString(s string) (Asset, error) {
 	if s == "lovelace" {
 		return ADA, nil
 	}
