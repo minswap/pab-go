@@ -98,7 +98,7 @@ func (val Value) MinimumADA(isScriptUtxo bool) *big.Int {
 	assetsSize := len(newVal) * 12
 	sumAssetNameLength := 0
 	for tn := range tokenNames {
-		sumAssetNameLength += len(tn)
+		sumAssetNameLength += len(tn) / 2
 	}
 
 	policyLength := len(policyIds) * policyLength
