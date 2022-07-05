@@ -299,7 +299,7 @@ func (c *CardanoCLI) SubmitTxWithSkey(tx *Tx, skeyFilePaths ...string) error {
 	// Write tx body file
 	txBody := tempManager.NewFile("tx-body")
 	content, err := json.Marshal(CBORFile{
-		Type:        "TxBodyAlonzo",
+		Type:        "TxBodyBabbage",
 		Description: "",
 		CBORHex:     tx.TxBody,
 	})

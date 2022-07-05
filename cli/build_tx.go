@@ -59,9 +59,9 @@ func (cli *CardanoCLI) buildTempFile(suffix string, content string, temp *TempMa
 func (cli *CardanoCLI) buildTx(b txbuilder.TxBuilder, temp *TempManager) []string {
 	var args []string
 	if b.IsRaw() {
-		args = []string{"transaction", "build-raw", "--alonzo-era", "--fee", strconv.FormatInt(b.Fee, 10)}
+		args = []string{"transaction", "build-raw", "--fee", strconv.FormatInt(b.Fee, 10)}
 	} else {
-		args = []string{"transaction", "build", "--alonzo-era", "--change-address", b.ChangeAddress}
+		args = []string{"transaction", "build", "--change-address", b.ChangeAddress}
 	}
 
 	// build inputs
