@@ -58,10 +58,23 @@ func (cli *CardanoCLI) buildTempFile(suffix string, content string, temp *TempMa
 
 func (cli *CardanoCLI) buildTx(b txbuilder.TxBuilder, temp *TempManager) []string {
 	var args []string
+	eraFlag := ""
+	switch cli.Era {
+	case Alonzo:
+		{
+			eraFlag = "--alonzo-era"
+			break
+		}
+	case Babbage:
+		{
+			eraFlag = "--babbage-era"
+			break
+		}
+	}
 	if b.IsRaw() {
-		args = []string{"transaction", "build-raw", "--babbage-era", "--fee", strconv.FormatInt(b.Fee, 10)}
+		args = []string{"transaction", "build-raw", eraFlag, "--fee", strconv.FormatInt(b.Fee, 10)}
 	} else {
-		args = []string{"transaction", "build", "--babbage-era", "--change-address", b.ChangeAddress}
+		args = []string{"transaction", "build", eraFlag, "--change-address", b.ChangeAddress}
 	}
 
 	// build inputs

@@ -14,6 +14,13 @@ import (
 	"github.com/minswap/pab-go/txbuilder"
 )
 
+type Era = string
+
+const (
+	Alonzo  Era = "Alonzo"
+	Babbage Era = "Babbage"
+)
+
 type Options struct {
 	CLIPath            string
 	NetworkID          NetworkID
@@ -28,6 +35,7 @@ type Options struct {
 type CardanoCLI struct {
 	CLIPath              string
 	NetworkID            NetworkID
+	Era                  Era
 	ProtocolParamsPath   string
 	LogCommand           bool
 	LogTempFile          bool
@@ -55,6 +63,26 @@ func New(options Options) (*CardanoCLI, error) {
 
 	if err := cli.initProtocolParamsFile(); err != nil {
 		return nil, fmt.Errorf("fail to init protocol params file: %w", err)
+	}
+	if tip, err := cli.GetTip(); err != nil {
+		return nil, fmt.Errorf("fail to get tip: %w", err)
+	} else {
+		switch tip.Era {
+		case "Alonzo":
+			{
+				cli.Era = "Alonzo"
+				break
+			}
+		case "Babbage":
+			{
+				cli.Era = "Babbage"
+				break
+			}
+		default:
+			{
+				return nil, fmt.Errorf("fail to parse Era: Era must be Alonzo or Babbage, actual %s", tip.Era)
+			}
+		}
 	}
 	return cli, nil
 }
@@ -298,8 +326,21 @@ func (c *CardanoCLI) SubmitTxWithSkey(tx *Tx, skeyFilePaths ...string) error {
 
 	// Write tx body file
 	txBody := tempManager.NewFile("tx-body")
+	txType := ""
+	switch c.Era {
+	case Alonzo:
+		{
+			txType = "TxBodyAlonzo"
+			break
+		}
+	case Babbage:
+		{
+			txType = "TxBodyBabbage"
+			break
+		}
+	}
 	content, err := json.Marshal(CBORFile{
-		Type:        "TxBodyBabbage",
+		Type:        txType,
 		Description: "",
 		CBORHex:     tx.TxBody,
 	})
