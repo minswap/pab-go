@@ -14,6 +14,13 @@ import (
 	"github.com/minswap/pab-go/txbuilder"
 )
 
+type Era = string
+
+const (
+	Alonzo  Era = "Alonzo"
+	Babbage Era = "Babbage"
+)
+
 type Options struct {
 	CLIPath            string
 	NetworkID          NetworkID
@@ -28,7 +35,7 @@ type Options struct {
 type CardanoCLI struct {
 	CLIPath              string
 	NetworkID            NetworkID
-	Era                  string
+	Era                  Era
 	ProtocolParamsPath   string
 	LogCommand           bool
 	LogTempFile          bool
@@ -63,12 +70,12 @@ func New(options Options) (*CardanoCLI, error) {
 		switch tip.Era {
 		case "Alonzo":
 			{
-				cli.Era = "--alonzo-era"
+				cli.Era = "Alonzo"
 				break
 			}
 		case "Babbage":
 			{
-				cli.Era = "--babbage-era"
+				cli.Era = "Babbage"
 				break
 			}
 		default:
@@ -319,8 +326,19 @@ func (c *CardanoCLI) SubmitTxWithSkey(tx *Tx, skeyFilePaths ...string) error {
 
 	// Write tx body file
 	txBody := tempManager.NewFile("tx-body")
+	txType := ""
+	switch c.Era {
+	case Alonzo:
+		{
+			txType = "TxBodyAlonzo"
+		}
+	case Babbage:
+		{
+			txType = "TxBodyBabbage"
+		}
+	}
 	content, err := json.Marshal(CBORFile{
-		Type:        "TxBodyBabbage",
+		Type:        txType,
 		Description: "",
 		CBORHex:     tx.TxBody,
 	})
