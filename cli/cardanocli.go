@@ -28,6 +28,7 @@ type Options struct {
 type CardanoCLI struct {
 	CLIPath              string
 	NetworkID            NetworkID
+	Era                  string
 	ProtocolParamsPath   string
 	LogCommand           bool
 	LogTempFile          bool
@@ -55,6 +56,26 @@ func New(options Options) (*CardanoCLI, error) {
 
 	if err := cli.initProtocolParamsFile(); err != nil {
 		return nil, fmt.Errorf("fail to init protocol params file: %w", err)
+	}
+	if tip, err := cli.GetTip(); err != nil {
+		return nil, fmt.Errorf("fail to get tip: %w", err)
+	} else {
+		switch tip.Era {
+		case "Alonzo":
+			{
+				cli.Era = "--alonzo-era"
+				break
+			}
+		case "Babbage":
+			{
+				cli.Era = "--babbage-era"
+				break
+			}
+		default:
+			{
+				return nil, fmt.Errorf("fail to parse Era: Era must be Alonzo or Babbage, actual %s", tip.Era)
+			}
+		}
 	}
 	return cli, nil
 }
