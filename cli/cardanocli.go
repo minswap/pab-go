@@ -331,10 +331,12 @@ func (c *CardanoCLI) SubmitTxWithSkey(tx *Tx, skeyFilePaths ...string) error {
 	case Alonzo:
 		{
 			txType = "TxBodyAlonzo"
+			break
 		}
 	case Babbage:
 		{
 			txType = "TxBodyBabbage"
+			break
 		}
 	}
 	content, err := json.Marshal(CBORFile{

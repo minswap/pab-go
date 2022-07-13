@@ -63,10 +63,12 @@ func (cli *CardanoCLI) buildTx(b txbuilder.TxBuilder, temp *TempManager) []strin
 	case Alonzo:
 		{
 			eraFlag = "--alonzo-era"
+			break
 		}
 	case Babbage:
 		{
 			eraFlag = "--babbage-era"
+			break
 		}
 	}
 	if b.IsRaw() {
