@@ -16,7 +16,7 @@ const transferLovelace = 10_000_000
 
 func main() {
 	cli, err := cli.New(cli.Options{
-		NetworkID:   cli.NetworkTestnet,
+		NetworkID:   cli.NetworkTestnetPreprod,
 		LogCommand:  true,
 		LogTempFile: true,
 	})
