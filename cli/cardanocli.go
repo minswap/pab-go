@@ -55,7 +55,7 @@ func New(options Options) (*CardanoCLI, error) {
 		cli.CLIPath = "cardano-cli"
 	}
 	if cli.NetworkID == 0 {
-		cli.NetworkID = NetworkTestnet
+		cli.NetworkID = NetworkTestnetPreprod
 	}
 	if cli.ProtocolParamsPath == "" {
 		cli.ProtocolParamsPath = "protocol-params.json"
