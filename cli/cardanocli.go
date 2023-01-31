@@ -330,12 +330,12 @@ func (c *CardanoCLI) SubmitTxWithSkey(tx *Tx, skeyFilePaths ...string) error {
 	switch c.Era {
 	case Alonzo:
 		{
-			txType = "TxBodyAlonzo"
+			txType = "Unwitnessed Tx AlonzoEra"
 			break
 		}
 	case Babbage:
 		{
-			txType = "TxBodyBabbage"
+			txType = "Unwitnessed Tx BabbageEra"
 			break
 		}
 	}
