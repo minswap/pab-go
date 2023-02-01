@@ -20,7 +20,8 @@ func buildInput(u txbuilder.TxInput) string {
 // Example: 100 lovelace + 42 5ca53b0eb10f317a5f1bf1bda679a04a8dd01c156643deee1d406ec2cc15e9e3.foo
 func buildValue(val ledger.Value) string {
 	var parts []string
-	for c, amount := range val {
+	trimmedVal := ledger.TrimValue(val)
+	for c, amount := range trimmedVal {
 		if c == ledger.ADA {
 			parts = append(parts, fmt.Sprintf("%s lovelace", amount.String()))
 		} else if c.TokenName == "" {

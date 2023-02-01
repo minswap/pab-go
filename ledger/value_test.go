@@ -35,3 +35,15 @@ func TestMinimumADA(t *testing.T) {
 		int64(2241330),
 	)
 }
+
+func TestTrimValue(t *testing.T) {
+	testAsset := NewAsset("1d7f33bd23d85e1a25d87d86fac4f199c3197a2f7afeb662a0f34e1e", "776f726c646d6f62696c65746f6b656e")
+	originVal := NewValue().
+		Add(ADA, big.NewInt(1000)).
+		Add(testAsset, big.NewInt(0))
+	trimmedVal := TrimValue(originVal)
+	assert.Equal(t,
+		trimmedVal[ADA].Int64(), int64(1000))
+	assert.Nil(t,
+		trimmedVal[testAsset])
+}
