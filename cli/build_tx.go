@@ -13,14 +13,15 @@ import (
 )
 
 // Example: 5ca53b0eb10f317a5f1bf1bda679a04a8dd01c156643deee1d406ec2cc15e9e3#0
-func buildInput(u txbuilder.TxInput) string {
+func BuildInput(u txbuilder.TxInput) string {
 	return fmt.Sprintf("%s#%d", u.TxID, u.TxIndex)
 }
 
 // Example: 100 lovelace + 42 5ca53b0eb10f317a5f1bf1bda679a04a8dd01c156643deee1d406ec2cc15e9e3.foo
-func buildValue(val ledger.Value) string {
+func BuildValue(val ledger.Value) string {
 	var parts []string
-	for c, amount := range val {
+	trimmedVal := val.Clone().Trim()
+	for c, amount := range trimmedVal {
 		if c == ledger.ADA {
 			parts = append(parts, fmt.Sprintf("%s lovelace", amount.String()))
 		} else if c.TokenName == "" {
@@ -32,12 +33,12 @@ func buildValue(val ledger.Value) string {
 	return strings.Join(parts, " + ")
 }
 
-func buildExUnits(exCPU, exMem int64) string {
+func BuildExUnits(exCPU, exMem int64) string {
 	return fmt.Sprintf("(%d,%d)", exCPU, exMem)
 }
 
-func buildOutput(o txbuilder.TxOutput) string {
-	return fmt.Sprintf("%s + %s", o.Address, buildValue(o.Value))
+func BuildOutput(o txbuilder.TxOutput) string {
+	return fmt.Sprintf("%s + %s", o.Address, BuildValue(o.Value))
 }
 
 func (cli *CardanoCLI) buildTempFile(suffix string, content string, temp *TempManager) string {
@@ -79,31 +80,31 @@ func (cli *CardanoCLI) buildTx(b txbuilder.TxBuilder, temp *TempManager) []strin
 
 	// build inputs
 	for _, in := range b.PubKeyInputs {
-		args = append(args, "--tx-in", buildInput(in))
+		args = append(args, "--tx-in", BuildInput(in))
 	}
 
 	for _, in := range b.ScriptInputs {
 		args = append(args,
-			"--tx-in", buildInput(in.TxInput),
+			"--tx-in", BuildInput(in.TxInput),
 			"--tx-in-script-file", in.ScriptFilePath,
 			"--tx-in-datum-file", cli.buildTempFile("input-datum", in.DatumValue, temp),
 			"--tx-in-redeemer-file", cli.buildTempFile("input-redeemer", in.RedeemerValue, temp),
 		)
 		if b.IsRaw() {
-			args = append(args, "--tx-in-execution-units", buildExUnits(in.ExCPU, in.ExMem))
+			args = append(args, "--tx-in-execution-units", BuildExUnits(in.ExCPU, in.ExMem))
 		}
 	}
 	for _, col := range b.Collaterals {
-		args = append(args, "--tx-in-collateral", buildInput(col))
+		args = append(args, "--tx-in-collateral", BuildInput(col))
 	}
 
 	// build outputs
 	for _, out := range b.PubKeyOutputs {
-		args = append(args, "--tx-out", buildOutput(out))
+		args = append(args, "--tx-out", BuildOutput(out))
 	}
 	for _, out := range b.ScriptOutputs {
 		args = append(args,
-			"--tx-out", buildOutput(out.TxOutput),
+			"--tx-out", BuildOutput(out.TxOutput),
 		)
 		switch datum := out.Datum.(type) {
 		case txbuilder.ScriptOutputDatumHash:
@@ -128,7 +129,7 @@ func (cli *CardanoCLI) buildTx(b txbuilder.TxBuilder, temp *TempManager) []strin
 			"--mint-redeemer-file", cli.buildTempFile("mint-redeemer", mint.RedeemerValue, temp),
 		)
 		if b.IsRaw() {
-			args = append(args, "--mint-execution-units", buildExUnits(mint.ExCPU, mint.ExMem))
+			args = append(args, "--mint-execution-units", BuildExUnits(mint.ExCPU, mint.ExMem))
 		}
 	}
 	mintScriptFilePaths := make(map[string]struct{}, 0)
@@ -147,7 +148,7 @@ func (cli *CardanoCLI) buildTx(b txbuilder.TxBuilder, temp *TempManager) []strin
 			"--mint-redeemer-file", cli.buildTempFile("mint-redeemer", burn.RedeemerValue, temp),
 		)
 		if b.IsRaw() {
-			args = append(args, "--mint-execution-units", buildExUnits(burn.ExCPU, burn.ExMem))
+			args = append(args, "--mint-execution-units", BuildExUnits(burn.ExCPU, burn.ExMem))
 		}
 	}
 	for _, burnNativeScript := range b.BurningNativeScript {
@@ -166,7 +167,7 @@ func (cli *CardanoCLI) buildTx(b txbuilder.TxBuilder, temp *TempManager) []strin
 	}
 
 	if len(forgeVal) > 0 {
-		args = append(args, "--mint", buildValue(forgeVal))
+		args = append(args, "--mint", BuildValue(forgeVal))
 	}
 	if b.ValidRangeFrom != nil {
 		args = append(args,
