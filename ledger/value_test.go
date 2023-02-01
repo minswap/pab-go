@@ -43,7 +43,7 @@ func TestTrimValue(t *testing.T) {
 		Add(ADA, big.NewInt(1000)).
 		Add(testAsset1, big.NewInt(0)).
 		Add(testAsset2, big.NewInt(-500))
-	trimmedVal := TrimValue(originVal)
+	trimmedVal := originVal.Clone().TrimValue()
 	assert.Equal(t,
 		trimmedVal[ADA].Int64(), int64(1000))
 	assert.Equal(t,

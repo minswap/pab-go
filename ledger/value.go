@@ -25,8 +25,7 @@ func (v Value) Clone() Value {
 	return w
 }
 
-func TrimValue(originVal Value) Value {
-	val := originVal.Clone()
+func (val Value) TrimValue() Value {
 	for asset, amount := range val {
 		if amount.Cmp(big.NewInt(0)) == 0 {
 			val.RemoveAsset(asset)
