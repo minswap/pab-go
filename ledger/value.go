@@ -36,10 +36,16 @@ func (val Value) Trim() Value {
 }
 
 func (v Value) Add(asset Asset, amount *big.Int) Value {
+	if amount.Cmp(big.NewInt(0)) == 0 {
+		return v
+	}
 	if _, ok := v[asset]; !ok {
 		v[asset] = big.NewInt(0)
 	}
 	v[asset].Add(v[asset], amount)
+	if v[asset].Cmp(big.NewInt(0)) == 0 {
+		v.RemoveAsset(asset)
+	}
 	return v
 }
 
