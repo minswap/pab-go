@@ -25,7 +25,8 @@ func (v Value) Clone() Value {
 	return w
 }
 
-func (val Value) TrimValue() Value {
+// Trim removes asset with zero amount
+func (val Value) Trim() Value {
 	for asset, amount := range val {
 		if amount.Cmp(big.NewInt(0)) == 0 {
 			val.RemoveAsset(asset)
@@ -84,6 +85,10 @@ func (v Value) RemoveAsset(c Asset) Value {
 func (v Value) Contains(c Asset) bool {
 	_, ok := v[c]
 	return ok
+}
+
+func (v Value) HasOnlyADA() bool {
+	return len(v) == 1 && v.Contains(ADA)
 }
 
 func (v Value) Assets() []Asset {
