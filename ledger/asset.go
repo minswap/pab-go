@@ -41,7 +41,11 @@ func (as Asset) String() string {
 	if as == ADA {
 		return "lovelace"
 	} else {
-		return fmt.Sprintf(`%s.%s`, as.CurrencySymbol, as.TokenName)
+		if as.TokenName == "" {
+			return fmt.Sprintf(`%s`, as.CurrencySymbol)
+		} else {
+			return fmt.Sprintf(`%s.%s`, as.CurrencySymbol, as.TokenName)
+		}
 	}
 }
 func (a Asset) Cmp(b Asset) int {
