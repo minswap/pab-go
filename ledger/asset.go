@@ -2,7 +2,6 @@ package ledger
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 )
 
@@ -40,12 +39,10 @@ func AssetFromString(s string) (Asset, error) {
 func (as Asset) String() string {
 	if as == ADA {
 		return "lovelace"
+	} else if as.TokenName == "" {
+		return as.CurrencySymbol
 	} else {
-		if as.TokenName == "" {
-			return fmt.Sprintf(`%s`, as.CurrencySymbol)
-		} else {
-			return fmt.Sprintf(`%s.%s`, as.CurrencySymbol, as.TokenName)
-		}
+		return as.CurrencySymbol + "." + as.TokenName
 	}
 }
 func (a Asset) Cmp(b Asset) int {
