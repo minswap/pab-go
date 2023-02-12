@@ -22,13 +22,19 @@ func AssetFromString(s string) (Asset, error) {
 		return ADA, nil
 	}
 	as := strings.Split(s, ".")
-	if len(as) != 2 {
-		return Asset{}, errors.New("cannot parse asset from string")
+	if len(as) == 1 {
+		return Asset{
+			CurrencySymbol: as[0],
+			TokenName:      "",
+		}, nil
+	} else if len(as) == 2 {
+		return Asset{
+			CurrencySymbol: as[0],
+			TokenName:      as[1],
+		}, nil
+	} else {
+		return Asset{}, errors.New("cannot parse asset from string, expect input to have format lovelace, $policyID or $policyID.$assetName")
 	}
-	return Asset{
-		CurrencySymbol: as[0],
-		TokenName:      as[1],
-	}, nil
 }
 
 func (as Asset) String() string {
